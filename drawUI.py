@@ -1,6 +1,6 @@
 import pygame as p
 import setting as s
-import loadimg as l
+import loading as l
 import chessEngine
 import button as b
 import playWithMachine as pWM
@@ -141,8 +141,6 @@ def drawStart(screen, gs):
     test = drawButton(screen, s.BUTTEXT_X , s.BUTTEXT_Y + 2*s.BUT_TEXT/3, s.BUT_TEXT, s.BUT_TEXT/6, "Play with ChaCaPro")
     solo = drawButton(screen, s.BUTTEXT_X , s.BUTTEXT_Y + s.BUT_TEXT, s.BUT_TEXT, s.BUT_TEXT/6, "Watch them play")
     
-    #chacachien = drawButton(screen, s.BUTTEXT_X,  s.BUTTEXT_Y + s.BUT_TEXT+s.BUT_TEXT/3, s.BUT_TEXT, s.BUT_TEXT/6, "Play together")
-    # chacachien = drawButton(screen, s.BUTTEXT_X,  s.BUTTEXT_Y + s.BUT_TEXT+s.BUT_TEXT/3, s.BUT_TEXT, s.BUT_TEXT/6, "Play with ChaCaChien")
     click = p.mouse.get_pressed()[0]
     if click==1:
         mouse = p.mouse.get_pos()
@@ -158,7 +156,4 @@ def drawStart(screen, gs):
         elif solo.collidepoint(mouse):
             time.sleep(0.2)
             return 4
-        elif chacachien.collidepoint(mouse):
-            time.sleep(0.2)
-            return 5
     return -1

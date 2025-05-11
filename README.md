@@ -1,4 +1,4 @@
-# Chinese Chess Game with Minimax AI
+# Chinese Chess Game with Minimax Algorithm
 
 This project implements a classic Chinese Chess (Xiangqi) game using Python and Pygame, allowing players to challenge a computer opponent powered by the Minimax algorithm.
 
@@ -13,7 +13,7 @@ This project implements a classic Chinese Chess (Xiangqi) game using Python and 
 
 ### Installation
 
-1. **Install Python: **
+1. **Install Python:**
 
 2. **Create virtual environment**
 
@@ -36,13 +36,13 @@ This project implements a classic Chinese Chess (Xiangqi) game using Python and 
 ## Game Mechanics
 
 - **Pieces:** The game uses traditional Chinese Chess pieces:
-  - **General (帥/将):** Can only move one square horizontally or vertically within its palace.
-  - **Advisor (仕/士):** Can only move diagonally within its palace.
-  - **Elephant (相/象):** Can move two squares diagonally, but cannot cross the river (the middle line of the board).
-  - **Rook (車/俥):** Can move horizontally or vertically any number of squares.
-  - **Cannon (炮/砲):** Can move horizontally or vertically any number of squares, but to capture a piece, it must jump over another piece.
-  - **Horse (馬/马):** Can move two squares horizontally or vertically, then one square perpendicularly.
-  - **Soldier (兵/卒):** Can move one square forward, but cannot move backward.
+  - **General (帥/将/K):** Can only move one square horizontally or vertically within its palace.
+  - **Advisor (仕/士/A):** Can only move diagonally within its palace.
+  - **Elephant (相/象/E):** Can move two squares diagonally, but cannot cross the river (the middle line of the board).
+  - **Rook (車/俥/R):** Can move horizontally or vertically any number of squares.
+  - **Cannon (炮/砲/C):** Can move horizontally or vertically any number of squares, but to capture a piece, it must jump over another piece.
+  - **Horse (馬/马/H):** Can move two squares horizontally or vertically, then one square perpendicularly.
+  - **Soldier (兵/卒/S):** Can move one square forward, but cannot move backward.
 - **Checkmate:** The game ends when the General is checkmated (under attack with no escape) by the opponent's pieces.
 - **Stalemate:** The game ends in a draw if the player whose turn it is to move has no legal move to make, even though their General is not under attack.
 

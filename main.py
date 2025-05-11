@@ -1,11 +1,10 @@
 import pygame as p
 import setting as s
-import loadimg as l
+import loading as l
 import chessEngine
 import button as b
 import playWithMachine as pWM
 import drawUI as draw
-# from ml import playwithdeep as pWD
 
 
 st = False      # START GAME OR NOT
@@ -110,9 +109,6 @@ def mainLoop():
                         move = pWM.test(gs)              # watch them play
                         if move != None:
                             gs.makeMove(move)
-                    # elif x == 5: 
-                    #     pWD.playWithChaca(gs)      # play with chacachien
-                        # play together
             if e.type == p.QUIT:
                 run = False
             

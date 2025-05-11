@@ -1,6 +1,6 @@
 import pygame as p
 import setting as s
-import loadimg as l
+import loading as l
 
 
 # this class define the normal button
