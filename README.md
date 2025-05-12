@@ -55,8 +55,6 @@ This project implements a classic Chinese Chess (Xiangqi) game using Python and 
 ## Future Enhancements
 
 - **Improved Heuristic Function:** Implement a more sophisticated scoring function to enhance the AI's strength.
-- **Opening Book:** Add a database of common opening moves for more strategic gameplay.
-- **Multiplayer Mode:** Allow two human players to compete against each other.
 - **GUI Enhancements:** Improve the visual aesthetics and user experience.
 
 ## Contributing
