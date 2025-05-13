@@ -2,7 +2,7 @@ import random
 from copy import deepcopy
 import chessEngine as s
 
-#this is the function generate random move
+# Function to generate random move
 def playingRandom(state):
     moveList = deepcopy(s.State.getAllValid(state.board, state.redTurn, state.redIsMachine))
     if moveList != []:
@@ -10,7 +10,7 @@ def playingRandom(state):
         return s.Move(state.board, move[0], move[1])
     return None
 
-# This is Minimax algorithm
+# Minimax algorithm
 moveCounter = 0    # keep number step of state (for defind start, mid, end game)
 class Minimax:
     def __init__(self, maxDepth):
@@ -19,13 +19,14 @@ class Minimax:
         self.MinimaxSuggestedMove = None
         self.path = []
 
-    # this is the function to play Minimax
+    # Method to play Minimax
     def initiateMinimax(self, board, redTurn, redIsMachine, depth, isMaximizingPlayer, c, alpha = float('-inf'), beta = float('inf')):
         global moveCounter
         MinimaxBoard = deepcopy(board)
         MinimaxNextMoveList = deepcopy(s.State.getAllValid(MinimaxBoard, redTurn , redIsMachine)) # = [ [(),()],[(),()],[(),()] ]
         if depth == 0 or MinimaxNextMoveList == []:
-            return s.State.evaluate(MinimaxBoard, redTurn, redIsMachine, c)*(1 if isMaximizingPlayer else -1), None #*(1 if isMaximizingPlayer else -1)      # return value of board which is the score of AI
+            return s.State.evaluate(MinimaxBoard, redTurn, redIsMachine, c)*(1 if isMaximizingPlayer else -1), None 
+            # Return value of board which is the score of AI, multiplied by 1 if is Maximizing, else -1
         self.nodeExpand += 1
         random.shuffle(MinimaxNextMoveList)
         if isMaximizingPlayer:

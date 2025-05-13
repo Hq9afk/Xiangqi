@@ -88,23 +88,21 @@ def gameScreenManager():
             if gameMode == -1:
                 gameMode = draw.drawGameMenuScreen(screen, gameState)
             if gameStart:
-                    draw.drawGameState(screen,gameState,gameStart)
-                    clock.tick(s.MAX_FPS)
-                    p.display.flip()
+                draw.drawGameState(screen,gameState,gameStart)
+                clock.tick(s.MAX_FPS)
+                p.display.flip()
                     
-                    if gameMode == 1:
+                if gameMode == 1:
                         pWM.gameModemanager(gameState, 1)            # play with random
-                    elif gameMode == 2:
+                elif gameMode == 2:
                         pWM.gameModemanager(gameState, 2)            # play with chaca
-                    elif gameMode ==3:
-                        pWM.gameModemanager(gameState, 3)            # play with chacaPro
-                    elif gameMode == 4: 
-                        AI_VS_RANDOM_Mode = True
-                        if not gameState.redTurn and not gameState.redIsMachine:
-                            draw.drawLastMove(screen,gameState)
-                        move = pWM.AI_VS_RANDOM_Mode(gameState)              # watch them play
-                        if move != None:
-                            gameState.makeMove(move)
+                elif gameMode == 3:
+                    AI_VS_RANDOM_Mode = True
+                    if not gameState.redTurn and not gameState.redIsMachine:
+                        draw.drawLastMove(screen,gameState)
+                    move = pWM.AI_VS_RANDOM_Mode(gameState)              # watch them play
+                    if move != None:
+                        gameState.makeMove(move)
             if e.type == p.QUIT:
                 run = False
             

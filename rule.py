@@ -25,7 +25,7 @@ for i in bottomHalfPosition.keys():
 
 
 # this is the class that return list of valid move of CAR (XE)
-def carValidMoveList(board, position, redIsMachine):
+def chariotValidMoveList(board, position, redIsMachine):
     valideMoveList =[]
     chessSide = board[position[0]][position[1]][0]
     row = position[0]
@@ -193,7 +193,7 @@ def kingValidMoveList(board, position, redIsMachine):
 
 
 # this is the class that return list of valid move of CANON (PHAO)
-def canonValidMoveList(board, position, redIsMachine):
+def cannonValidMoveList(board, position, redIsMachine):
     validMoveList=[]
     row = position[0]
     j = position[1]
@@ -294,11 +294,11 @@ def moveRule(board, position, redIsMachine):  #(), redIsMachine is after
     chessPiece = board[position[0]][position[1]][1:]
     validMoveList = []
     if chessPiece == 'xe':
-        validMoveList = carValidMoveList(board, position, redIsMachine)
+        validMoveList = chariotValidMoveList(board, position, redIsMachine)
     elif chessPiece == 'ma':
         validMoveList = horseValidMoveList(board, position, redIsMachine)
     elif chessPiece == 'ph':
-        validMoveList = canonValidMoveList(board, position, redIsMachine)
+        validMoveList = cannonValidMoveList(board, position, redIsMachine)
     elif chessPiece == 'tu':
         validMoveList = kingValidMoveList(board, position, redIsMachine)
     elif chessPiece == 'si':
