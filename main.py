@@ -33,10 +33,10 @@ def playAgainGame():
     use to setup the game before play
 '''
 def setup():
-    global pa
+    global pa 
     global st
-    global x
-    p.init()
+    global x #
+    p.init() # initialize the pygame
     pa = False
     st = False
 
@@ -56,10 +56,10 @@ def mainLoop():
     p.display.set_caption('Chinese Chess')
     screen = p.display.set_mode((s.SCREEN_WIDTH,s.SCREEN_HEIGHT))
     
-    gs = chessEngine.State()
+    gs = chessEngine.State() # create the state of the game
     clock = p.time.Clock()
-    run = True
-    listClick=[]
+    run = True # run the game
+    listClick=[] #
 
     # this is the list of button    
     objects=()
@@ -81,7 +81,8 @@ def mainLoop():
         for e in p.event.get():
             if x != -1:  
                 draw.drawGameState(screen,gs,st)
-
+                
+                # Vẽ lại các nút
                 for o in objects:
                     o.process(screen,gs)
 
@@ -90,6 +91,11 @@ def mainLoop():
             if st:
 
                     draw.drawGameState(screen,gs,st)
+
+                # Vẽ lại các nút khi trò chơi bắt đầu
+                    for o in objects:
+                        o.process(screen, gs)
+
                     clock.tick(s.MAX_FPS)
                     p.display.flip()
 
@@ -98,10 +104,8 @@ def mainLoop():
                     
                     elif x == 1:
                         pWM.playWithAI(gs,1)            # play with random
-                    elif x == 2:
-                        pWM.playWithAI(gs,2)            # play with chaca
                     elif x ==3:
-                        pWM.playWithAI(gs,3)            # play with chacaPro
+                        pWM.playWithAI(gs,3)            
                     elif x == 4:
                         robo = True
                         if not gs.redMove and not gs.after:

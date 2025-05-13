@@ -7,10 +7,10 @@ import loading as l
 class Button:
     isStartGame = False
     def __init__(self, x, y, width, height,type,img, onClickFunction =None):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        self.x = x # x position of the button
+        self.y = y 
+        self.width = width # width of the button
+        self.height = height 
         self.onClickFunction = onClickFunction
         self.img = {
             'normal': img[0],

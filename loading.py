@@ -11,9 +11,8 @@ def loadChessMan(): #Tải hình ảnh các quân cờ.
     return chessMan
 
 def loadBoard(): #Tải hình ảnh bàn cờ.
-    # Load the board image and scale it to the desired size
     img_path = os.path.join(os.path.dirname(__file__), 'img', 'board.jpg')
-    board = p.transform.scale(p.image.load(img_path), (s.WIDTH, s.HEIGHT))
+    board = p.transform.scale(p.image.load(img_path), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
     return board
 
 def loadLight(): #Tải hình ảnh nước đi hợp lệ.
@@ -55,5 +54,9 @@ def loadSquare():
 
 def loadCheckMate():
     img_path = os.path.join(os.path.dirname(__file__), 'img', 'check.png')
-    checkMate = p.transform.scale(p.image.load(img_path), (s.CELL_SIZE * 3, s.CELL_SIZE * 3))
+    checkMate = p.transform.scale(p.image.load(img_path), (s.CELL_SIZE * 7.3, s.CELL_SIZE * 1.5))
     return checkMate
+
+def loadMenuBackground():
+    img_path = os.path.join(os.path.dirname(__file__), 'img', 'menu_background.png')
+    return p.transform.scale(p.image.load(img_path), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
