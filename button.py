@@ -1,11 +1,12 @@
 import pygame as p
 
 
-# this class define the normal button
+# Defines regular buttons
 class Button:
     gameStart = False
 
     def __init__(self, x, y, width, height, type, img, onClickFunction=None):
+        # Initialize a regular button
         self.x = x
         self.y = y
         self.width = width
@@ -23,6 +24,7 @@ class Button:
         self.type = type
 
     def process(self, screen, gameState):
+        # Handle button state and click events
         clickPosition = p.mouse.get_pos()
         if self.type == "re":
             if gameState.moveLog == []:
@@ -82,12 +84,14 @@ class Button:
             screen.blit(self.img[self.state], (self.x, self.y))
 
 
-# this class define a special button like the start game button
+# Defines special buttons
 class specialButton(Button):
     def __init__(self, x, y, width, height, type, img, onClickFunction=None):
+        # Initialize a special button
         super().__init__(x, y, width, height, type, img, onClickFunction)
 
     def process(self, screen, gameState):
+        # Handle special button state and click events
         clickPosition = p.mouse.get_pos()
         if self.type == "ex":
             if gameState.moveLog == []:
@@ -115,7 +119,8 @@ class specialButton(Button):
             if p.mouse.get_pressed()[0] and not self.isPress:
                 self.state = "pressed"
                 self.isPress = True
-                self.onClickFunction()
+                if self.onClickFunction:
+                    self.onClickFunction()
                 if self.type == "st":
                     self.active = True
                     Button.gameStart = True

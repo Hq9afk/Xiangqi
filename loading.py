@@ -3,7 +3,8 @@ import setting as s
 import os
 
 
-def loadPiece():  # Load chess pieces.
+# Load chess pieces
+def loadPiece():
     chessMan = {}
     chessName = [
         "bsd",
@@ -29,18 +30,21 @@ def loadPiece():  # Load chess pieces.
     return chessMan
 
 
-def loadBoard():  # Load chessboard
+# Load the board
+def loadBoard():
     img_path = os.path.join(os.path.dirname(__file__), "img", "board.jpg")
     board = p.transform.scale(p.image.load(img_path), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
     return board
 
 
-def loadValid():  # Load valid move suggestion
+# Load possible moves for the selected piece
+def loadValid():
     img_path = os.path.join(os.path.dirname(__file__), "img", "valid.png")
     light = p.transform.scale(p.image.load(img_path), (s.CELL_SIZE, s.CELL_SIZE))
     return light
 
 
+# Load button images for different button types
 def loadButton(type):
     button0, button1, button2, button3 = None, None, None, None
     if type == "undo":
@@ -151,13 +155,15 @@ def loadButton(type):
     return [button0, button1, button2, button3]
 
 
+# Load indicator image
 def loadIndicator():
     img_path = os.path.join(os.path.dirname(__file__), "img", "indicator.png")
     square = p.transform.scale(p.image.load(img_path), (s.CELL_SIZE, s.CELL_SIZE))
     return square
 
 
-def loadCheckMate():
+# Load check banner image
+def loadCheck():
     img_path = os.path.join(os.path.dirname(__file__), "img", "check.png")
     checkMate = p.transform.scale(
         p.image.load(img_path), (s.CELL_SIZE * 7.3, s.CELL_SIZE * 1.5)
@@ -165,6 +171,7 @@ def loadCheckMate():
     return checkMate
 
 
+# Load main menu background
 def loadMainMenu():
     img_path = os.path.join(os.path.dirname(__file__), "img", "mainMenu.png")
     return p.transform.scale(p.image.load(img_path), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))

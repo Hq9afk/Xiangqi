@@ -4,8 +4,6 @@ import chessEngine as s
 
 
 # Minimax algorithm
-
-
 class Minimax:
     def __init__(self, maxDepth):
         self.maxDepth = maxDepth
@@ -28,10 +26,9 @@ class Minimax:
             s.State.getAllValid(MinimaxBoard, redTurn, redIsMachine)
         )  # = [ [(),()],[(),()],[(),()] ]
         if depth == 0 or MinimaxNextMoveList == []:
-            return (
-                s.State.evaluate(MinimaxBoard, redTurn, redIsMachine, moveCounter)
-                * (1 if isMaximizingPlayer else -1),
-            )
+            return s.State.evaluate(
+                MinimaxBoard, redTurn, redIsMachine, moveCounter
+            ) * (1 if isMaximizingPlayer else -1)
             # Return value of board which is the score of AI, multiplied by 1 if is Maximizing, else -1
         random.shuffle(MinimaxNextMoveList)
         if isMaximizingPlayer:
@@ -58,6 +55,7 @@ class Minimax:
                         self.MinimaxSuggestedMove = deepcopy(move)
                 alpha = max(alpha, best)
                 if alpha >= beta:
+                    print(f"1 {alpha} {beta}")
                     break
 
             return best
@@ -85,12 +83,13 @@ class Minimax:
 
                 beta = min(beta, best)
                 if alpha >= beta:
+                    print(f"2 {alpha} {beta}")
                     break
 
             return best
 
 
-# Function to generate random move
+# Function to generate random moves
 def playWithRandom(state):
     moveList = deepcopy(
         s.State.getAllValid(state.board, state.redTurn, state.redIsMachine)

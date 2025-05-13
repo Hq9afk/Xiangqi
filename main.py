@@ -4,13 +4,13 @@ import loading as l
 import chessEngine
 import button as b
 import playWithMachine as pWM
-import drawUI as draw
+import displayUI as dp
 
 
-gameStart = False  # START GAME OR NOT
-returnToMain = False  # PLAY AGAIN OR NOT
-AI_VS_RANDOM_Mode = False  # ROBOT OR NOT USE TO AI PLAY WITH RAMDOM
-gameMode = -1  # CHOOSE MODE
+gameStart = False  # Start game
+returnToMain = False  # Return to main menu
+AI_VS_RANDOM_Mode = False  # Check if Option "AI vs Random" is chosen
+gameMode = -1  # Choose mode
 
 """
     FUNCTION: startGame
@@ -50,7 +50,6 @@ def gameScreenManager():
     run = True
     playerActionPositionList = []
 
-    # this is the list of button
     gameButtonList = ()
     undoButton = b.Button(
         s.BACKWARD_X,
@@ -77,7 +76,7 @@ def gameScreenManager():
         s.BUT_HEIGHT,
         "ex",
         l.loadButton("swap"),
-        gameState.reverse,
+        gameState.swap,
     )
     startButton = b.Button(
         s.START_X,
@@ -106,7 +105,7 @@ def gameScreenManager():
         returnToMenuButton,
     )
 
-    # create the mode = -1 mean not choose mode
+    # gameMode = -1 means no modes are chosen yet, we are at the main menu
     global gameMode
     gameMode = -1
     while run:
@@ -119,16 +118,16 @@ def gameScreenManager():
                 break
 
             if gameMode != -1:
-                draw.drawGameState(screen, gameState, gameStart)
+                dp.displayGameState(screen, gameState, gameStart)
 
                 for btn in gameButtonList:
                     btn.process(screen, gameState)
 
             if gameMode == -1:
-                gameMode = draw.drawGameMenuScreen(screen, gameState)
+                gameMode = dp.displayMainMenu(screen, gameState)
 
             if gameStart:
-                draw.drawGameState(screen, gameState, gameStart)
+                dp.displayGameState(screen, gameState, gameStart)
 
                 for button in gameButtonList:
                     button.process(screen, gameState)
@@ -137,14 +136,14 @@ def gameScreenManager():
                 p.display.flip()
 
                 if gameMode == 1:
-                    pWM.gameModemanager(gameState, 1)  # play with random
+                    pWM.gameModemanager(gameState, 1)
                 elif gameMode == 2:
-                    pWM.gameModemanager(gameState, 2)  # play with ai
+                    pWM.gameModemanager(gameState, 2)
                 elif gameMode == 3:
                     AI_VS_RANDOM_Mode = True
                     if not gameState.redTurn and not gameState.redIsMachine:
-                        draw.drawLastMove(screen, gameState)
-                    move = pWM.AIVSRandom(gameState)  # watch them play
+                        dp.displayMove(screen, gameState)
+                    move = pWM.AIVSRandom(gameState)
                     if move != None:
                         gameState.makeMove(move)
             if e.type == p.QUIT:
@@ -154,10 +153,10 @@ def gameScreenManager():
             elif e.type == p.MOUSEBUTTONDOWN:
 
                 if gameStart == False or AI_VS_RANDOM_Mode:
-                    continue  # if game not start yet or in AI vs Random mode, click event not use
+                    continue  # Hide the buttons in "AI vs Random" mode
 
                 y_x_margin_and_boxSize = s.GRID
-                mouseCoord = p.mouse.get_pos()  # get the position of mouse
+                mouseCoord = p.mouse.get_pos()
                 row = int(
                     (mouseCoord[1] - y_x_margin_and_boxSize[0])
                     // y_x_margin_and_boxSize[2]
@@ -199,12 +198,12 @@ def gameScreenManager():
                                     playerActionPositionList[1],
                                 )
                                 gameState.makeMove(move)
-                                draw.drawGameState(screen, gameState, gameStart)
+                                dp.displayGameState(screen, gameState, gameStart)
                                 clock.tick(s.MAX_FPS)
                                 p.display.flip()
                             playerActionPositionList = []
                         gameState.selectedCell = ()
-        # if click play again
+        # Returns to the main menu
         if returnToMain:
             returnToMain = False
             main()
@@ -213,6 +212,7 @@ def gameScreenManager():
         p.display.flip()
 
 
+# Driver code
 def main():
     setup()
     gameScreenManager()
