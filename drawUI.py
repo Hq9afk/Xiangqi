@@ -87,7 +87,7 @@ This function is draw when the King is checked
 '''
 def drawCheckMate(screen, gameState: chessEngine.State):
     checkMateImg = l.loadCheckMate()
-    screen.blit(checkMateImg,(s.WIDTH/2 - checkMateImg.get_width()/2, s.SCREEN_HEIGHT/2 - checkMateImg.get_height()/2))
+    screen.blit(checkMateImg,(s.WIDTH/2 - checkMateImg.get_width()/2, s.START_Y+5))
 
 
 '''
@@ -101,7 +101,7 @@ def drawEndGame(screen, gameState: chessEngine.State):
         print(winner, " WIN")
         myFont = p.font.SysFont("Comic Sans MS", 30)
         textSurface = myFont.render(winner + " WIN", False, (0, 0, 0))
-        screen.blit(textSurface,(s.WIDTH/2 - textSurface.get_width()/2, s.SCREEN_HEIGHT/2 - textSurface.get_height()/2))
+        screen.blit(textSurface,(s.WIDTH/2 - textSurface.get_width()/2, s.START_Y+5))
         
 '''
 This is the function draw the UI when AI is thinking

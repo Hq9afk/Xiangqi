@@ -169,7 +169,7 @@ class State:
 
         # check if the movement is valid
         if not rule.moveCheckValid(tmpBoard, tmpRedTurn, self.redIsMachine):      
-            print("Your king is being threaten, protect is must")
+            print("Your general is being checked, protect is must")
             return False
         else:
 

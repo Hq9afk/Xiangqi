@@ -87,15 +87,20 @@ def gameScreenManager():
 
             if gameMode == -1:
                 gameMode = draw.drawGameMenuScreen(screen, gameState)
+                
             if gameStart:
                 draw.drawGameState(screen,gameState,gameStart)
+                
+                for button in gameButtonList:
+                    button.process(screen, gameState)
+                    
                 clock.tick(s.MAX_FPS)
                 p.display.flip()
                     
                 if gameMode == 1:
                         pWM.gameModemanager(gameState, 1)            # play with random
                 elif gameMode == 2:
-                        pWM.gameModemanager(gameState, 2)            # play with chaca
+                        pWM.gameModemanager(gameState, 2)            # play with ai
                 elif gameMode == 3:
                     AI_VS_RANDOM_Mode = True
                     if not gameState.redTurn and not gameState.redIsMachine:
