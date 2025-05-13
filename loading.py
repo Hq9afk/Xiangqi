@@ -1,8 +1,8 @@
-import pygame as p #xử lý hình ảnh.
+import pygame as p # xử lý hình ảnh.
 import setting as s
 import os
 
-def loadChessMan(): #Tải hình ảnh các quân cờ.
+def loadChessPiece(): # Tải hình ảnh các quân cờ.
     chessMan = {}
     chessName = ['bch', 'bma', 'bph', 'bxe', 'bvo', 'bsi', 'btu', 'rch', 'rma', 'rph', 'rxe', 'rvo', 'rsi', 'rtu']
     for i in chessName:

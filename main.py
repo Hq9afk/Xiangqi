@@ -7,152 +7,144 @@ import playWithMachine as pWM
 import drawUI as draw
 
 
-st = False      # START GAME OR NOT
-pa = False      # PLAY AGAIN OR NOT
-robo = False    # ROBOT OR NOT USE TO AI PLAY WITH RAMDOM
-x = -1          # CHOOSE MODE
+gameStart = False      # START GAME OR NOT
+returnToMain = False      # PLAY AGAIN OR NOT
+AI_VS_RANDOM_Mode = False    # ROBOT OR NOT USE TO AI PLAY WITH RAMDOM
+gameMode = -1          # CHOOSE MODE
 
 '''
     FUNCTION: startGame
     use to start create the board
 '''
 def startGame():
-    global st
-    st= True
+    global gameStart
+    gameStart= True
 
 '''
     FUNCTION: playAgainGame
     use to play again
 '''
-def playAgainGame():
-    global pa
-    pa = True
+def replayGame():
+    global returnToMain
+    returnToMain = True
     
 '''
     FUNCTION: setup
     use to setup the game before play
 '''
 def setup():
-    global pa 
-    global st
-    global x #
-    p.init() # initialize the pygame
-    pa = False
-    st = False
+    global returnToMain
+    global gameStart
+    global gameMode
+    p.init()
+    returnToMain = False
+    gameStart = False
 
 '''
-    FUNCTION: shutDown
+    FUNCTION: quitGame
     use to quit the game
 '''
-def shutDown():
+def quitGame():
     p.quit()
 
 '''
-    FUNCTION: mainLoop
+    FUNCTION: gameScreenManager
     use to run the game    
 '''
-def mainLoop():
-
+def gameScreenManager():
     p.display.set_caption('Chinese Chess')
     screen = p.display.set_mode((s.SCREEN_WIDTH,s.SCREEN_HEIGHT))
     
-    gs = chessEngine.State() # create the state of the game
+    gameState = chessEngine.State()
     clock = p.time.Clock()
-    run = True # run the game
-    listClick=[] #
+    run = True
+    playerActionPositionList=[]
 
     # this is the list of button    
-    objects=()
-    backwardBut = b.Button(s.BACKWARD_X, s.BACKWARD_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'re', l.loadButton('backward'), gs.reMoveReal)
-    nextstepBut = b.Button(s.NEXTSTEP_X, s.NEXTSTEP_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'ne', l.loadButton('nextstep'), gs.nextMoveReal)
-    reverseBut = b.SButton(s.REVERSE_X, s.REVERSE_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'ex', l.loadButton('reverse'), gs.reverse)
-    startBut = b.Button(s.START_X, s.START_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'st', l.loadButton('start'), startGame)
-    playAgainBut = b.SButton(s.REPLAY_X, s.REPLAY_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'pa', l.loadButton('replay'), playAgainGame)
+    gameButtonList=()
+    undoButton = b.Button(s.BACKWARD_X, s.BACKWARD_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'re', l.loadButton('backward'), gameState.undoMove)
+    redoButton = b.Button(s.NEXTSTEP_X, s.NEXTSTEP_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'ne', l.loadButton('nextstep'), gameState.redoMove)
+    changeChessSideButton = b.specialButton(s.REVERSE_X, s.REVERSE_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'ex', l.loadButton('reverse'), gameState.reverse)
+    startButton = b.Button(s.START_X, s.START_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'st', l.loadButton('start'), startGame)
+    returnToMenuButton = b.specialButton(s.REPLAY_X, s.REPLAY_Y, s.BUT_WIDTH, s.BUT_HEIGHT,'pa', l.loadButton('replay'), replayGame)
 
-    objects += (backwardBut,nextstepBut,reverseBut,startBut,playAgainBut)
+    gameButtonList += (undoButton, redoButton, changeChessSideButton, startButton, returnToMenuButton)
 
     # create the mode = -1 mean not choose mode
-    x = -1
+    global gameMode
+    gameMode = -1
     while run:
-        global st
-        global pa
-        global robo
+        global gameStart
+        global returnToMain
+        global AI_VS_RANDOM_Mode
 
         for e in p.event.get():
-            if x != -1:  
-                draw.drawGameState(screen,gs,st)
-                
-                # Vẽ lại các nút
-                for o in objects:
-                    o.process(screen,gs)
+            if gameMode != -1:  
+                draw.drawGameState(screen,gameState,gameStart)
 
-            if x == -1:
-                x  = draw.drawStart(screen, gs)
-            if st:
+                for btn in gameButtonList:
+                    btn.process(screen,gameState)
 
-                    draw.drawGameState(screen,gs,st)
-
-                # Vẽ lại các nút khi trò chơi bắt đầu
-                    for o in objects:
-                        o.process(screen, gs)
-
+            if gameMode == -1:
+                gameMode = draw.drawGameMenuScreen(screen, gameState)
+            if gameStart:
+                    draw.drawGameState(screen,gameState,gameStart)
                     clock.tick(s.MAX_FPS)
                     p.display.flip()
-
-                    if x==0:
-                        pass
                     
-                    elif x == 1:
-                        pWM.playWithAI(gs,1)            # play with random
-                    elif x ==3:
-                        pWM.playWithAI(gs,3)            
-                    elif x == 4:
-                        robo = True
-                        if not gs.redMove and not gs.after:
-                            draw.drawFoot(screen,gs)
-                        move = pWM.test(gs)              # watch them play
+                    if gameMode == 1:
+                        pWM.gameModemanager(gameState, 1)            # play with random
+                    elif gameMode == 2:
+                        pWM.gameModemanager(gameState, 2)            # play with chaca
+                    elif gameMode ==3:
+                        pWM.gameModemanager(gameState, 3)            # play with chacaPro
+                    elif gameMode == 4: 
+                        AI_VS_RANDOM_Mode = True
+                        if not gameState.redTurn and not gameState.redIsMachine:
+                            draw.drawLastMove(screen,gameState)
+                        move = pWM.AI_VS_RANDOM_Mode(gameState)              # watch them play
                         if move != None:
-                            gs.makeMove(move)
+                            gameState.makeMove(move)
             if e.type == p.QUIT:
                 run = False
             
             elif e.type == p.MOUSEBUTTONDOWN:
                 
-                if st == False or robo: continue          # if not start or robot with robot, not click
+                if gameStart == False or AI_VS_RANDOM_Mode: continue  # if game not start yet or in AI vs Random mode, click event not use
                 
-                start = s.GRID                              
-                pos = p.mouse.get_pos()                   # get the position of mouse
-              
-                row = int((pos[1]-start[0])//start[2])
-                col = int((pos[0]-start[1])//start[2])
-                if row >9 or col >8 or row <0 or col <0:
+                y_x_margin_and_boxSize = s.GRID                              
+                mouseCoord = p.mouse.get_pos()                   # get the position of mouse
+                row = int((mouseCoord[1] - y_x_margin_and_boxSize[0]) // y_x_margin_and_boxSize[2])
+                col = int((mouseCoord[0] - y_x_margin_and_boxSize[1]) // y_x_margin_and_boxSize[2])
+
+                if row > 9 or col > 8 or row < 0 or col < 0:
                     break
-                if listClick ==[]:
-                    if (gs.redMove and gs.board[row][col][0] == 'b') or (not gs.redMove and gs.board[row][col][0] == 'r'): break
+                if playerActionPositionList ==[]:
+                    if (gameState.redTurn and gameState.board[row][col][0] == 'b') or (not gameState.redTurn and gameState.board[row][col][0] == 'r'): break
                 
-                listClick.append((row,col))
-                if 0<= row <=9 and 0<= col <=8:
-                    if gs.board[listClick[0][0]][listClick[0][1]]=='---':
-                        listClick =[]
+                playerActionPositionList.append((row,col))
+                if 0 <= row <= 9 and 0 <= col <= 8:
+                    if gameState.board[playerActionPositionList[0][0]][playerActionPositionList[0][1]]=='---':
+                        playerActionPositionList =[]
                     else:
-                        gs.selectedCell = listClick[0]
+                        gameState.selectedCell = playerActionPositionList[0]
                         
-                    if len(listClick) ==2:
-                        if listClick[0] == listClick[1]:
-                            listClick =[]
+                    if len(playerActionPositionList) ==2:
+                        if playerActionPositionList[0] == playerActionPositionList[1]:
+                            playerActionPositionList =[]
                         else:
-                            listValid = gs.checkValid(gs.selectedCell)
-                            if listClick[1] in listValid:
-                                move = chessEngine.Move(gs.board,listClick[0], listClick[1])
-                                gs.makeMove(move)
-                                draw.drawGameState(screen,gs,st)
+                            validMoveList = gameState.checkValid(gameState.selectedCell)
+                            if playerActionPositionList[1] in validMoveList:
+                                move = chessEngine.Move(gameState.board, playerActionPositionList[0], playerActionPositionList[1])
+                                gameState.makeMove(move)
+                                draw.drawGameState(screen,gameState,gameStart)
                                 clock.tick(s.MAX_FPS)
                                 p.display.flip()
-                            listClick =[]
-                        gs.selectedCell = ()
+                            playerActionPositionList =[]
+                        gameState.selectedCell = ()
         # if click play again
-        if pa:
-            pa = False
+        if returnToMain:
+            returnToMain = False
             main()    
 
         clock.tick(s.MAX_FPS)
@@ -160,9 +152,8 @@ def mainLoop():
         
 def main():
     setup()
-    mainLoop()
-    shutDown()
+    gameScreenManager()
+    quitGame()
         
 if __name__ == '__main__':
     main()
-    
