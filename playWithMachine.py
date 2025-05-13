@@ -2,82 +2,56 @@ import random
 from copy import deepcopy
 import chessEngine as s
 
-
-# Generate random move
+#this is the function generate random move
 def playingRandom(state):
-    listMove = deepcopy(s.State.getAllValid(state.board, state.redMove, state.after))
-    if listMove != []:
-        move = random.choice(listMove)
+    moveList = deepcopy(s.State.getAllValid(state.board, state.redTurn, state.redIsMachine))
+    if moveList != []:
+        move = random.choice(moveList)
         return s.Move(state.board, move[0], move[1])
     return None
 
-
-# Minimax algorithm
-count = 0  # keep number step of state (for defind start, mid, end game)
-
-
+# This is Minimax algorithm
+moveCounter = 0    # keep number step of state (for defind start, mid, end game)
 class Minimax:
     def __init__(self, maxDepth):
         self.maxDepth = maxDepth
         self.nodeExpand = 0
-        self.realMove = None
+        self.MinimaxSuggestedMove = None
         self.path = []
 
     # this is the function to play Minimax
-    def playMinimax(
-        self,
-        board,
-        redMove,
-        after,
-        depth,
-        isMaximizingPlayer,
-        c,
-        alpha=float("-inf"),
-        beta=float("inf"),
-    ):
-        global count
-        miniBoard = deepcopy(board)
-        listNextMoves = deepcopy(
-            s.State.getAllValid(miniBoard, redMove, after)
-        )  # = [ [(),()],[(),()],[(),()] ]
-        if depth == 0 or listNextMoves == []:
-            return (
-                s.State.evaluate(miniBoard, redMove, after, c)
-                * (1 if isMaximizingPlayer else -1),
-                None,
-            )  # *(1 if isMaximizingPlayer else -1)      # return value of board which is the score of AI
+    def initiateMinimax(self, board, redTurn, redIsMachine, depth, isMaximizingPlayer, c, alpha = float('-inf'), beta = float('inf')):
+        global moveCounter
+        MinimaxBoard = deepcopy(board)
+        MinimaxNextMoveList = deepcopy(s.State.getAllValid(MinimaxBoard, redTurn , redIsMachine)) # = [ [(),()],[(),()],[(),()] ]
+        if depth == 0 or MinimaxNextMoveList == []:
+            return s.State.evaluate(MinimaxBoard, redTurn, redIsMachine, c)*(1 if isMaximizingPlayer else -1), None #*(1 if isMaximizingPlayer else -1)      # return value of board which is the score of AI
         self.nodeExpand += 1
-        random.shuffle(listNextMoves)
+        random.shuffle(MinimaxNextMoveList)
         if isMaximizingPlayer:
-            best = float("-inf")
-            for move in listNextMoves:
-                nextboard = deepcopy(
-                    s.miniNext(miniBoard, not isMaximizingPlayer, after, move)
-                )
-                value, path = self.playMinimax(
-                    nextboard, not redMove, after, depth - 1, False, c, alpha, beta
-                )
+            best = float('-inf')
+            for move in MinimaxNextMoveList:
+                nextboard = deepcopy(s.getNextGameState(MinimaxBoard, not isMaximizingPlayer, redIsMachine, move))
+                value, path = self.initiateMinimax(nextboard, not redTurn, redIsMachine, depth-1, False, c, alpha, beta)
                 if value > best:
                     best = value
                     if depth == self.maxDepth:
-                        self.realMove = deepcopy(move)
+                        self.MinimaxSuggestedMove = deepcopy(move)
                 alpha = max(alpha, best)
                 if alpha >= beta:
                     break
 
             return best, self.path
         else:
-            best = float("inf")
-            for move in listNextMoves:
-                nextboard = deepcopy(s.miniNext(miniBoard, redMove, after, move))
-                value, path = self.playMinimax(
-                    nextboard, not redMove, after, depth - 1, True, c, alpha, beta
-                )
+            best = float('inf')
+            for move in MinimaxNextMoveList:
+                nextboard = deepcopy(s.getNextGameState(MinimaxBoard, redTurn, redIsMachine, move))
+                value, path = self.initiateMinimax(nextboard, not redTurn , redIsMachine, depth-1, True, c, alpha, beta)
                 if value < best:
                     best = value
                     if depth == self.maxDepth:
-                        self.realMove = deepcopy(move)
-
+                        self.MinimaxSuggestedMove = deepcopy(move)
+                        
                 beta = min(beta, best)
                 if alpha >= beta:
                     break
@@ -86,32 +60,10 @@ class Minimax:
 
 
 # this is the function that call CHACAPRO in UI
-def playingWithPro(state):
-
-    minimax = Minimax(2)
-    minimax.playMinimax(
-        state.board,
-        state.redMove,
-        state.after,
-        minimax.maxDepth,
-        True,
-        len(state.moveLog),
-    )
-    move = minimax.realMove
-
-    if move != None:
-        m = s.Move(state.board, move[0], move[1])
-        return m
-    return None
-
-
-# this is the function that call CHACA in UI
-def playingWithCalCu(state):
-    minimax = Minimax(2)
-    minimax.playMinimax(
-        state.board, state.redMove, state.after, minimax.maxDepth, True, 0
-    )
-    move = minimax.realMove
+def playWithChaCaPro(state):
+    minimax = Minimax(2) 
+    minimax.initiateMinimax(state.board, state.redTurn, state.redIsMachine, minimax.maxDepth, True, len(state.moveLog))
+    move = minimax.MinimaxSuggestedMove
     if move != None:
         m = s.Move(state.board, move[0], move[1])
         return m
@@ -119,34 +71,25 @@ def playingWithCalCu(state):
 
 
 # this is the entring function of AI which decide which AI will play
-def playWithAI(state, type):
-    turn = (
-        True
-        if (state.after and state.redMove) or (not state.after and not state.redMove)
-        else False
-    )
+def gameModemanager(state, type):
+    turn = True if (state.redIsMachine and state.redTurn) or (not state.redIsMachine and not state.redTurn) else False
     if turn:
         play = None
         if type == 1:
             play = playingRandom(state)
         elif type == 2:
-            play = playingWithCalCu(state)
-        elif type == 3:
-            play = playingWithPro(state)
-        # elif type == 5:           sử dụng ml
-        # play = pWM.play
+            play = playWithChaCaPro(state)
         if play:
             state.makeMove(play)
 
 
 # this is the function to test AI (all win with random machine)
-def test(state):
-    turn = True if state.after else False
+def AI_VS_RANDOM_Mode(state):
     play = None
-    if turn:
-        if state.redMove:
+    if state.redIsMachine:
+        if state.redTurn:
             play = None
-            play = playingWithPro(state)
+            play = playWithChaCaPro(state)
             if play:
                 state.makeMove(play)
         else:
@@ -155,10 +98,10 @@ def test(state):
             if play:
                 state.makeMove(play)
     else:
-        if state.redMove:
+        if state.redTurn:
             play = None
             play = playingRandom(state)
         else:
-            play = None
-            play = playingWithPro(state)
+            play = None    
+            play = playWithChaCaPro(state)
         return play

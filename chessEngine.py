@@ -3,44 +3,19 @@ from copy import deepcopy
 import random
 import playWithMachine as pwm
 
-
 class Move:
-    ranksToRows = {
-        0: "10",
-        1: "9",
-        2: "8",
-        3: "7",
-        4: "6",
-        5: "5",
-        6: "4",
-        7: "3",
-        8: "2",
-        9: "1",
-    }
-    ranksToCols = {
-        0: "a",
-        1: "b",
-        2: "c",
-        3: "d",
-        4: "e",
-        5: "f",
-        6: "g",
-        7: "h",
-        8: "i",
-    }
-
+    rowID = {0:'10',1:'9', 2:'8', 3:'7', 4:'6', 5:'5', 6:'4', 7:'3', 8:'2', 9:'1'}
+    colID = {0:'a',1:'b',2:'c',3:'d',4:'e',5:'f',6:'g',7:'h',8:'i'}
     def __init__(self, board, first, second):
         self.board = deepcopy(board)
         self.startRow = first[0]
         self.startCol = first[1]
         self.endRow = second[0]
         self.endCol = second[1]
-        self.chessManMoved = board[self.startRow][self.startCol]
-        self.chessCaptured = board[self.endRow][self.endCol]
-        self.moveID = (
-            self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
-        )
-
+        self.chess_pieceSelected = board[self.startRow][self.startCol]
+        self.chess_pieceMoveTo = board[self.endRow][self.endCol]
+        self.moveID = self.startRow*1000 + self.startCol*100 + self.endRow*10 + self.endCol
+        
     def getChange(self):
         return (
             self.getPosition(self.startRow, self.startCol)
@@ -49,17 +24,9 @@ class Move:
         )
 
     def getPosition(self, row, col):
-        return self.ranksToCols[col] + self.ranksToRows[row]
-
+        return self.colID[col] + self.rowID[row]
     def __str__(self):
-        return (
-            self.chessManMoved
-            + " "
-            + self.getPosition(self.startRow, self.startCol)
-            + "-->"
-            + self.getPosition(self.endRow, self.endCol)
-        )
-
+       return self.chess_pieceSelected + ' ' + self.getPosition(self.startRow, self.startCol) +'-->'+ self.getPosition(self.endRow, self.endCol) 
 
 class State:
     def __init__(self):
@@ -145,17 +112,15 @@ class State:
                 "rxe",
             ],  # tu = king
         ]
-        # ['bxe','---','bvo','bsi','btu','bsi','bvo','---','bxe'],       # b = black
-        # ['---','---','---','---','---','---','---','---','---'],        # r = red
-        # ['bma','bph','---','---','bph','---','bma','---','---'],        # ma = horse
-        # ['bch','---','bch','---','bch','---','---','---','bch'],
-        # ['---','---','---','---','---','---','bch','---','---'],        # ph = cannon
-        # ['---','---','rch','---','---','---','---','---','---'],        # vo = elephant
-        # ['rch','---','---','---','rch','---','rch','---','rch'],        # si = advisor
-        # ['---','rph','rma','---','---','---','rma','rph','---'],        # ch = soldier
-        # ['---','---','---','---','---','---','---','---','---'],
-        # ['rxe','---','rvo','rsi','rtu','rsi','rvo','---','rxe']         # tu = king
-        # ]
+
+        self.redTurn = True         #  Red side's turn
+        self.redIsMachine = False   #  after means when reveses the board, the red side belong to machine
+        self.moveLog = []           #  store all the move
+        self.pastMoveStorage =[]    #  store all the move when click undo button
+        self.selectedCell = ()      #  store the selected cell
+        self.blackKing = (0,4)      #  store the position of black king
+        self.redKing = (9,4)        #  store the position of red king
+        self.isGameStart = False        #  check if the game is start
 
         self.redMove = True  #  red move is your
         self.after = (
@@ -179,177 +144,118 @@ class State:
                 elif self.board[i][j][0] == "b":
                     self.board[i][j] = "r" + self.board[i][j][1:]
         self.blackKing, self.redKing = self.redKing, self.blackKing
-        self.after = not self.after
-
-    # ----------------------------------------------------
+        self.redIsMachine = not self.redIsMachine
+        
+    #----------------------------------------------------
     #   This method is used to make a move, it requires a move object as a parameter
     #   It returns nothing, but it will change the board and the moveLog
     # ----------------------------------------------------
     def makeMove(self, move: Move):
-
         # create a temp board to check if the movement is valid
         tmpBoard = deepcopy(self.board)
-        tmpRedMove = self.redMove
-        tmpBlackKing, tmpRedKing = self.blackKing, self.redKing
-
+        tmpRedTurn = self.redTurn
+        tmpBlackKing,  tmpRedKing  = self.blackKing, self.redKing
+        
         # update the temp board
-        tmpBoard[move.startRow][move.startCol] = "---"  # empty the start cell
-        tmpBoard[move.endRow][
-            move.endCol
-        ] = move.chessManMoved  # move the chessman to the end cell
+        tmpBoard[move.startRow][move.startCol] = '---'                    # empty the start cell
+        tmpBoard[move.endRow][move.endCol] = move.chess_pieceSelected     # move the chessman to the end cell
 
         # update king position
-        if move.chessManMoved[1:] == "tu":
-            if tmpRedMove:
-                tmpRedKing = (move.endRow, move.endCol)
+        if move.chess_pieceSelected[1:] == 'tu':
+            if tmpRedTurn:
+                tmpRedKing = (move.endRow, move.endCol)             
             else:
                 tmpBlackKing = (move.endRow, move.endCol)
 
         # check if the movement is valid
-        if not rule.validMove(tmpBoard, tmpRedMove, self.after):
-            print("Loi mat tuong")
+        if not rule.moveCheckValid(tmpBoard, tmpRedTurn, self.redIsMachine):      
+            print("Your king is being threaten, protect is must")
             return False
         else:
 
             # update state when the movement is valid
             self.board = deepcopy(tmpBoard)
-            self.redKing, self.blackKing = (
-                tmpRedKing,
-                tmpBlackKing,
-            )  # update the king position
+            self.redKing, self.blackKing  = tmpRedKing, tmpBlackKing    # update the kings position
 
-            self.moveLog.append(deepcopy(move))  # update the moveLog
-
-            self.redMove = not self.redMove  # change the turn
-            self.store = []  # can't use the nextMove after make a move
-            print(move.getChange(), "---", self.blackKing, self.redKing)
-
-    # ----------------------------------------------------
+            
+            self.moveLog.append(deepcopy(move))                         # update the moveLog
+            
+            self.redTurn = not self.redTurn                             # change the turn
+            self.pastMoveStorage =[]                                    # can't use the redo action after making a move
+            print(move.getChange(),'---', self.blackKing, self.redKing)
+            
+    #----------------------------------------------------
     #   This method is used to undo a move
     #   It returns nothing, but it will change the board and the moveLog
-    # ----------------------------------------------------
-    def reMoveReal(self):
-        self.reMove()
-        self.reMove()
-
-    # ----------------------------------------------------
-    #   This method is used to undo a undo move
+    #----------------------------------------------------
+    def undoMove(self):
+        self.undo()
+        self.undo()
+    #----------------------------------------------------
+    #   This method is used to redo a undo move
     #   It returns nothing, but it will change the board and the moveLog
-    # ----------------------------------------------------
-    def nextMoveReal(self):
-        self.nextMove()
-        self.nextMove()
-
-    # ----------------------------------------------------
+    #----------------------------------------------------
+    def redoMove(self):
+        self.redo()
+        self.redo()
+        
+    #----------------------------------------------------
     #   This method is used to undo a move
     #   It returns nothing, but it will change the board and the moveLog
-    # ----------------------------------------------------
-    def reMove(self):
+    #----------------------------------------------------
+    def undo(self):
         if len(self.moveLog) == 0:
             return
-        move = deepcopy(self.moveLog[-1])  # g6h8
-        self.board[move.startRow][move.startCol] = move.chessManMoved
-        self.board[move.endRow][move.endCol] = move.chessCaptured
-        turn = "r" if self.redMove else "b"  # == true if red
-
-        if move.chessManMoved[1:] == "tu":
-            if self.redMove:
-                self.blackKing = (move.startRow, move.startCol)
+        lastMove = deepcopy(self.moveLog[-1]) #g6h8
+        self.board[lastMove.startRow][lastMove.startCol] = lastMove.chess_pieceSelected
+        self.board[lastMove.endRow][lastMove.endCol] = lastMove.chess_pieceMoveTo
+        isRedLastTurn = not self.redTurn
+        
+        if lastMove.chess_pieceSelected[1:] == 'tu':
+            if isRedLastTurn:
+                self.redKing = (lastMove.startRow, lastMove.startCol)
             else:
-                self.redKing = (move.startRow, move.startCol)
+                self.blackKing = (lastMove.startRow, lastMove.startCol)
 
-        self.store.append(deepcopy(self.moveLog.pop()))
-        self.redMove = not self.redMove
-        print(move.getChange(), "---", self.blackKing, self.redKing)
+        self.pastMoveStorage.append(deepcopy(self.moveLog.pop()))
+        self.redTurn = not self.redTurn
+        print(lastMove.getChange(),'---', self.blackKing, self.redKing)
 
     # ----------------------------------------------------
     #   This method is used to undo a undo move
     #   It returns nothing, but it will change the board and the moveLog
-    # ----------------------------------------------------
-    def nextMove(self):
-        if len(self.store) == 0:
+    #----------------------------------------------------
+    def redo(self):
+        if len(self.pastMoveStorage) == 0:
             return
-        move = deepcopy(self.store[-1])
-        self.board[move.startRow][move.startCol] = "---"
-        self.board[move.endRow][move.endCol] = move.chessManMoved
-        turn = "r" if self.redMove else "b"  # == true if red
-        if move.chessManMoved[1:] == "tu":
-            if self.redMove:
-                self.redKing = (move.endRow, move.endCol)
+        nextMoveInStorage = deepcopy(self.pastMoveStorage[-1])
+        self.board[nextMoveInStorage.startRow][nextMoveInStorage.startCol] = '---'
+        self.board[nextMoveInStorage.endRow][nextMoveInStorage.endCol] = nextMoveInStorage.chess_pieceSelected
+        isRedNextTurn = not self.redTurn
+        if nextMoveInStorage.chess_pieceSelected[1:] == 'tu':
+            if isRedNextTurn:
+                self.blackKing = (nextMoveInStorage.endRow, nextMoveInStorage.endCol)
             else:
-                self.blackKing = (move.endRow, move.endCol)
+                self.redKing = (nextMoveInStorage.endRow, nextMoveInStorage.endCol)
 
-        self.moveLog.append(deepcopy(self.store.pop()))
-        self.redMove = not self.redMove
-        print(move.getChange(), "---", self.blackKing, self.redKing)
-
-    # ----------------------------------------------------
-    #   This method is used to check if a chess man on a cell can move to other cells
+        self.moveLog.append(deepcopy(self.pastMoveStorage.pop()))
+        self.redTurn = not self.redTurn
+        print(nextMoveInStorage.getChange(),'---', self.blackKing, self.redKing)
+    
+    #----------------------------------------------------
+    #   This method is used to check if a chess piece on a cell can move to other cells
     #   It returns a list of valid moves
     # ----------------------------------------------------
     def checkValid(self, position):
-        x = rule.RuleMove(self.board, position, self.after)
-        return x
-
-    # ----------------------------------------------------
+        return rule.moveRule(self.board, position, self.redIsMachine)
+    
+    #----------------------------------------------------
     #   This method check if the king is check
     #   It returns true if the king is check
     # ----------------------------------------------------
     def checkMate(self):
-        # position = (self.moveLog[-1].endRow, self.moveLog[-1].endCol) if len(self.moveLog)>0 else None
-        # if position == None: return False
-        x = rule.isThreaten(
-            self.board, self.blackKing, self.redKing, not self.redMove, self.after
-        )
-
-        return x
-
-    # ----------------------------------------------------
-    # we don't use this because it's too slow
-    # def getAllValidMove(self):
-    #     listValid = []
-    #     listValidMove = []
-    #      # == true if red
-    #     turn = 'r' if self.redMove else 'b'
-
-    #     for row in range(10):
-    #         for col in range(9):
-    #             if self.board[row][col] != '---' and turn == self.board[row][col][0]:
-    #                 chessMan = rule.ChessMan(self.board[row][col]).type
-    #                 listValid = chessMan.canMove(self.board, (row,col), self.after)
-    #                 for cell in listValid:
-    #                     #move = Move(self, (row,col), cell)
-    #                     move = Move(self.board,(row,col), cell)
-    #                     tmpBoard = deepcopy(self.board)
-    #                     tmpredMove = self.redMove
-    #                     #statetmpmoveLog = deepcopy(self.moveLog)
-    #                     #statetmpstore = deepcopy(self.store)
-
-    #                     tmpblackKing = self.blackKing
-    #                     tmpredKing = self.redKing
-
-    #                     tmpBoard[move.startRow][move.startCol] = '---'
-    #                     tmpBoard[move.endRow][move.endCol] = move.chessManMoved
-
-    #                     if move.chessManMoved[1:] == 'tu':
-    #                         if tmpredMove:
-    #                             tmpredKing = (move.endRow, move.endCol)
-    #                         else:
-    #                             tmpblackKing = (move.endRow, move.endCol)
-    #                     # if move.chessCaptured != '---':
-    #                     #     for i in statetmp.listSoldier:
-    #                     #         if i.position == (move.endRow, move.endCol) and i.live == True and i.team != turn:
-    #                     #             i.live = False
-    #                     #             break
-    #                     # for i in statetmp.listSoldier:
-    #                     #     if i.position == (move.startRow, move.startCol) and i.live == True and i.team == turn:
-    #                     #         i.changePos((move.endRow, move.endCol))
-    #                     #         break
-
-    #                     if rule.ChessMan.validMove(tmpBoard, tmpblackKing, tmpredKing, tmpredMove, self.after):
-    #                         listValidMove.append((deepcopy(move)))
-    #     return listValidMove
-
+        return rule.isKingBeThreaten(self.board, self.blackKing, self.redKing, not self.redTurn, self.redIsMachine)
+        
     # ----------------------------------------------------
     # This method check if the game is end
     # It returns a tuple (True/False, 'r'/'b'/'')
@@ -357,126 +263,74 @@ class State:
     # 'r' if red win, 'b' if black win, '' if no one win
     # ----------------------------------------------------
     def checkEnd(self):
-        if State.getAllValid(self.board, self.redMove, self.after) == []:
-            return True, "b" if self.redMove else "r"
-        return False, ""
-
-    # ----------------------------------------------------
-    # This method is used to evaluate the board
-    # we don't use this because it's too slow
-    # ----------------------------------------------------
-    # def evaluate(self):
-    #     e = 0
-    #     if self.checkEnd()[0]:
-    #         e += 100000 if (self.checkEnd()[1]=='b' and self.after) or (self.checkEnd()[1]=='r' and not self.after)  else 0
-    #         e += -100000 if (self.checkEnd()[1]=='b' and not self.after) or (self.checkEnd()[1]=='r' and self.after)  else 0
-    #     # for sold in self.listSoldier:
-    #     #     if sold.live:
-    #     #         chessMan = rule.ChessMan(self.board[sold.position[0]][sold.position[1]]).type
-    #     #         if sold.team == 'r':
-    #     #             e += chessMan.power + rule.position[sold.name][sold.position[0]][sold.position[1]]
-    #     #         else:
-    #     #             e -= (chessMan.power + rule.bposition[sold.name][sold.position[0]][sold.position[1]])
-    #     for row in range(10):
-    #         for col in range(9):
-    #             if self.board[row][col] != '---':
-    #                 chessMan = rule.ChessMan(self.board[row][col]).type
-    #                 if self.board[row][col][0] == 'r':
-    #                     e += chessMan.power + rule.position[self.board[row][col][1:]][row][col]
-    #                 else:
-    #                     e -= (chessMan.power + rule.bposition[self.board[row][col][1:]][row][col])
-
-    #     return -e if self.after and self.redMove else (-e if not self.after and not self.redMove else e)
-
+        if State.getAllValid(self.board, self.redTurn, self.redIsMachine) == []:
+            return True, 'b' if self.redTurn else 'r'
+        return False,""
+    
     # ----------------------------------------------------
     # This method is used to get all valid move
     # ----------------------------------------------------
     @staticmethod
-    def getAllValid(board, redMove, after):
-
-        listCandidate = []
-        listValidMove = []
-        # == true if red
-        turn = "r" if redMove else "b"
+    def getAllValid(board, redTurn, redIsMachine):
+        
+        candidateMoveList = []
+        validMoveList = []
+         # == true if red
+        turn = 'r' if redTurn else 'b'
 
         for row in range(10):
             for col in range(9):
-                if board[row][col] != "---" and turn == board[row][col][0]:
-                    listCandidate = rule.RuleMove(board, (row, col), after)
-                    for cell in listCandidate:
-
-                        move = Move(board, (row, col), cell)
-
+                if board[row][col] != '---' and turn == board[row][col][0]:   
+                    candidateMoveList = rule.moveRule(board, (row,col), redIsMachine)
+                    for cell in candidateMoveList:
+                        
+                        move = Move(board, (row,col), cell)
+                        
                         tmpBoard = deepcopy(board)
-                        tmpredMove = redMove
+                        tmpRedTurn = redTurn
+                        
+                        tmpBoard[move.startRow][move.startCol] = '---'
+                        tmpBoard[move.endRow][move.endCol] = move.chess_pieceSelected
 
-                        tmpBoard[move.startRow][move.startCol] = "---"
-                        tmpBoard[move.endRow][move.endCol] = move.chessManMoved
-
-                        if rule.validMove(tmpBoard, tmpredMove, after):
-                            # listValidMove.append((deepcopy(move)))
-                            listValidMove.append([(row, col), cell])
-        return listValidMove
-
+                        if rule.moveCheckValid(tmpBoard, tmpRedTurn, redIsMachine):
+                            #listValidMove.append((deepcopy(move)))
+                            validMoveList.append([(row,col), cell])
+        return validMoveList
     # ----------------------------------------------------
     # This method is used to evaluate the board which is Max is black and Min is red
     # It's used in minimax algorithm
     # ----------------------------------------------------
     @staticmethod
-    def evaluate(board, redMove, after, c):
-        e = 0
-        if State.getAllValid(board, redMove, after) == []:
-            return 100000 if after else -100000
-        if c >= 0:
+    def evaluate(board, redTurn, redIsMachine, moveCount):
+        ePoint = 0
+        if State.getAllValid(board, redTurn, redIsMachine) ==[]:    
+            return 100000 if redIsMachine else -100000
+        
+        if moveCount >=0 and moveCount <= 14:
             power = deepcopy(rule.startPower)
-
-        elif c >= 14:
+        elif moveCount >= 14 and moveCount <= 50:
             power = deepcopy(rule.midPower)
-
         else:
             power = deepcopy(rule.endPower)
 
         for row in range(10):
             for col in range(9):
-                if board[row][col] != "---":
-                    chessMan = board[row][col][1:]
-                    if board[row][col][0] == "r":
-                        e = (
-                            (
-                                e
-                                - power[chessMan]
-                                - rule.belowPosition[chessMan][row][col]
-                            )
-                            if not after
-                            else (
-                                e
-                                + power[chessMan]
-                                + rule.upperPosition[chessMan][row][col]
-                            )
-                        )
+                if board[row][col] != '---':
+                    chessPiece = board[row][col][1:]
+                    if board[row][col][0] == 'r':
+                        ePoint = (ePoint - power[chessPiece] - rule.bottomHalfPosition[chessPiece][row][col]) if not redIsMachine else (ePoint + power[chessPiece] + rule.upperHalfPosition[chessPiece][row][col])
                     else:
-                        e = (
-                            e + power[chessMan] + rule.upperPosition[chessMan][row][col]
-                            if not after
-                            else (
-                                e
-                                - power[chessMan]
-                                - rule.belowPosition[chessMan][row][col]
-                            )
-                        )
-        return e
-
-
+                        ePoint = ePoint + power[chessPiece] + rule.upperHalfPosition[chessPiece][row][col] if not redIsMachine else (ePoint - power[chessPiece] - rule.bottomHalfPosition[chessPiece][row][col])
+        return ePoint
 # ----------------------------------------------------
 # This function use to get the next state (board) after a move
 # ----------------------------------------------------
-def miniNext(board, redMove, after, m):
+def getNextGameState(board, redTurn, redIsMachine, nextMove): 
     tmpBoard = deepcopy(board)
-    move = deepcopy(m)
-    # move = [(a,b), (e,d)]
-    chessManMoved = tmpBoard[move[0][0]][move[0][1]]
+    nextMove = deepcopy(nextMove)
 
-    tmpBoard[move[0][0]][move[0][1]] = "---"
-    tmpBoard[move[1][0]][move[1][1]] = chessManMoved
+    selectedChess_piece = tmpBoard[nextMove[0][0]][nextMove[0][1]] 
+    tmpBoard[nextMove[0][0]][nextMove[0][1]] = '---'       
+    tmpBoard[nextMove[1][0]][nextMove[1][1]] = selectedChess_piece
 
     return tmpBoard

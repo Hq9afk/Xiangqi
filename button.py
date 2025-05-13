@@ -2,11 +2,10 @@ import pygame as p
 import setting as s
 import loading as l
 
-
 # this class define the normal button
 class Button:
-    isStartGame = False
-    def __init__(self, x, y, width, height,type,img, onClickFunction =None):
+    gameStart = False
+    def __init__(self, x, y, width, height, type, img, onClickFunction = None):
         self.x = x
         self.y = y
         self.width = width
@@ -22,43 +21,43 @@ class Button:
         self.isPress = False
         self.active = False
         self.type = type
-    def process(self, screen, gs):
-        pos = p.mouse.get_pos()
+    def process(self, screen, gameState):
+        clickPosition = p.mouse.get_pos()
         if self.type =='re':
-            if gs.moveLog ==[]:
+            if gameState.moveLog ==[]:
                 self.state = 'normal'
             else:
                 self.state = 'active'
         elif self.type =='ne':
-            if gs.store == []:
+            if gameState.pastMoveStorage == []:
                 self.state = 'normal'
             else:
                 self.state = 'active'
         elif self.type =='ex':
-            if gs.moveLog ==[]:
+            if gameState.moveLog ==[]:
                 self.state = 'normal'
             else:
                 self.state = 'active'
         elif self.type == 'st':
-            if gs.moveLog ==[]:
+            if gameState.moveLog ==[]:
                 self.state = 'normal'
             else:
                 self.state = 'active'
         elif self.type == 'pa':
-            if gs.moveLog !=[]:
+            if gameState.moveLog !=[]:
                 self.state = 'normal'
             else:
                 self.state = 'active'      
         if self.state =='active' or self.type =='st' or self.type =='pa' or self.type =='ex':
-            if self.x <= pos[0] <= self.x + self.width and self.y <= pos[1] <= self.y + self.height:
+            if self.x <= clickPosition[0] <= self.x + self.width and self.y <= clickPosition[1] <= self.y + self.height:
                 self.state = 'hover'
                 if p.mouse.get_pressed()[0] and not self.isPress:
                     self.state = 'pressed'
-                    self.isPress =True
+                    self.isPress = True
                     self.onClickFunction()
                     if self.type == 'st':
                         self.active = True
-                        Button.isStartGame = True
+                        Button.gameStart = True
                 else:
                     self.isPress = False
         if self.type == 'st' and self.active:
@@ -67,39 +66,38 @@ class Button:
             return
         if self.type == 'ex' and self.state == 'active':
             return
-
         if self.type == 'st' and self.state == 'active':
             return
         if self.state != None:
-            
             screen.blit(self.img[self.state], (self.x, self.y))
 
 
 #this class define a special button like the start game button
-class SButton(Button):
-    def __init__(self, x, y, width, height,type,img, onClickFunction =None):
-        super().__init__( x, y, width, height,type,img, onClickFunction)
-    def process(self, screen, gs):
-        pos = p.mouse.get_pos()
-
+class specialButton(Button):
+    def __init__(self, x, y, width, height,type,img, onClickFunction = None):
+        super().__init__( x, y, width, height, type, img, onClickFunction)
+        
+    def process(self, screen, gameState):
+        clickPosition = p.mouse.get_pos()
         if self.type =='ex':
-            if gs.moveLog ==[]:
+            if gameState.moveLog ==[]:
                 self.state = 'normal'
             else:
                 self.state = 'active'
         elif self.type == 'st':
-            if gs.moveLog ==[]:
+            if gameState.moveLog ==[]:
                 self.state = 'normal'
             else:
                 self.state = 'active'
         elif self.type == 'pa':
-            if gs.moveLog !=[]:
+            if gameState.moveLog !=[]:
                 self.state = 'normal'
             else:
                 self.state = 'active'
-        if self.state == 'active': return
+        if self.state == 'active': 
+            return
         
-        if self.x <= pos[0] <= self.x + self.width and self.y <= pos[1] <= self.y + self.height:
+        if self.x <= clickPosition[0] <= self.x + self.width and self.y <= clickPosition[1] <= self.y + self.height:
             self.state = 'hover'
             if p.mouse.get_pressed()[0] and not self.isPress:
                 self.state = 'pressed'
@@ -107,8 +105,9 @@ class SButton(Button):
                 self.onClickFunction()
                 if self.type == 'st':
                     self.active = True
-                    Button.isStartGame = True
+                    Button.gameStart = True
             else:
                 self.isPress = False
+                
         if self.state != None:
             screen.blit(self.img[self.state], (self.x, self.y))
