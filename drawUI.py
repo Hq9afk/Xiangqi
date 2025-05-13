@@ -151,9 +151,8 @@ def drawGameMenuScreen(screen, gs):
     screen.blit(background, (0, 0))
     
     randomBut = drawButton(screen, s.BUTTEXT_X , s.BUTTEXT_Y, s.BUT_TEXT, s.BUT_TEXT/6, "Play with Random")
-    
-    test = drawButton(screen, s.BUTTEXT_X , s.BUTTEXT_Y + 110, s.BUT_TEXT, s.BUT_TEXT/6, "Play with AI")
-    solo = drawButton(screen, s.BUTTEXT_X , s.BUTTEXT_Y + 220, s.BUT_TEXT, s.BUT_TEXT/6, "Test mode")
+    testBut = drawButton(screen, s.BUTTEXT_X , s.BUTTEXT_Y + 110, s.BUT_TEXT, s.BUT_TEXT/6, "Play with AI")
+    soloBut = drawButton(screen, s.BUTTEXT_X , s.BUTTEXT_Y + 220, s.BUT_TEXT, s.BUT_TEXT/6, "Random vs AI")
 
     click = p.mouse.get_pressed()[0]
     if click==1:
@@ -161,10 +160,10 @@ def drawGameMenuScreen(screen, gs):
         if randomBut.collidepoint(mouse):
             time.sleep(0.2)
             return 1
-        elif test.collidepoint(mouse):
+        elif testBut.collidepoint(mouse):
+            time.sleep(0.2)
+            return 2
+        elif soloBut.collidepoint(mouse):
             time.sleep(0.2)
             return 3
-        elif solo.collidepoint(mouse):
-            time.sleep(0.2)
-            return 4
     return -1

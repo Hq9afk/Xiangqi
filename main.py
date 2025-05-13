@@ -100,7 +100,7 @@ def gameScreenManager():
                     AI_VS_RANDOM_Mode = True
                     if not gameState.redTurn and not gameState.redIsMachine:
                         draw.drawLastMove(screen,gameState)
-                    move = pWM.AI_VS_RANDOM_Mode(gameState)              # watch them play
+                    move = pWM.AIVSRandom(gameState)              # watch them play
                     if move != None:
                         gameState.makeMove(move)
             if e.type == p.QUIT:

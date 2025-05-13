@@ -416,7 +416,7 @@ def isKingBeThreaten(board, blackKing, redKing, redTurn, redIsMachine):
 
         for i in canonPositionList:
             if i in candidateKingThreatenList:
-                validCanonThreatList = canonValidMoveList(board, i, redIsMachine)
+                validCanonThreatList = cannonValidMoveList(board, i, redIsMachine)
                 if (x,y) in validCanonThreatList:
                     #print("The king is threatened by a canon")
                     return True

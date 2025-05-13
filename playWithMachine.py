@@ -2,13 +2,6 @@ import random
 from copy import deepcopy
 import chessEngine as s
 
-# Function to generate random move
-def playingRandom(state):
-    moveList = deepcopy(s.State.getAllValid(state.board, state.redTurn, state.redIsMachine))
-    if moveList != []:
-        move = random.choice(moveList)
-        return s.Move(state.board, move[0], move[1])
-    return None
 
 # Minimax algorithm
 moveCounter = 0    # keep number step of state (for defind start, mid, end game)
@@ -19,7 +12,7 @@ class Minimax:
         self.MinimaxSuggestedMove = None
         self.path = []
 
-    # Method to play Minimax
+    # Method to initiate Minimax
     def initiateMinimax(self, board, redTurn, redIsMachine, depth, isMaximizingPlayer, c, alpha = float('-inf'), beta = float('inf')):
         global moveCounter
         MinimaxBoard = deepcopy(board)
@@ -59,9 +52,16 @@ class Minimax:
 
             return best, self.path
 
+# Function to generate random move
+def playWithRandom(state):
+    moveList = deepcopy(s.State.getAllValid(state.board, state.redTurn, state.redIsMachine))
+    if moveList != []:
+        move = random.choice(moveList)
+        return s.Move(state.board, move[0], move[1])
+    return None
 
-# this is the function that call CHACAPRO in UI
-def playWithChaCaPro(state):
+# Function to play using Minimax algorithm
+def playWithAI(state):
     minimax = Minimax(2) 
     minimax.initiateMinimax(state.board, state.redTurn, state.redIsMachine, minimax.maxDepth, True, len(state.moveLog))
     move = minimax.MinimaxSuggestedMove
@@ -70,39 +70,39 @@ def playWithChaCaPro(state):
         return m
     return None
 
-
-# this is the entring function of AI which decide which AI will play
-def gameModemanager(state, type):
-    turn = True if (state.redIsMachine and state.redTurn) or (not state.redIsMachine and not state.redTurn) else False
-    if turn:
-        play = None
-        if type == 1:
-            play = playingRandom(state)
-        elif type == 2:
-            play = playWithChaCaPro(state)
-        if play:
-            state.makeMove(play)
-
-
-# this is the function to test AI (all win with random machine)
-def AI_VS_RANDOM_Mode(state):
+# Function to let the Minimax algorithm play against the random move generator
+def AIVSRandom(state):
     play = None
     if state.redIsMachine:
         if state.redTurn:
             play = None
-            play = playWithChaCaPro(state)
+            play = playWithAI(state)
             if play:
                 state.makeMove(play)
         else:
             play = None
-            play = playingRandom(state)
+            play = playWithRandom(state)
             if play:
                 state.makeMove(play)
     else:
         if state.redTurn:
             play = None
-            play = playingRandom(state)
+            play = playWithRandom(state)
         else:
             play = None    
-            play = playWithChaCaPro(state)
+            play = playWithAI(state)
         return play
+
+# Function to Manage game modes
+def gameModemanager(state, type):
+    turn = True if (state.redIsMachine and state.redTurn) or (not state.redIsMachine and not state.redTurn) else False
+    if turn:
+        play = None
+        if type == 1:
+            play = playWithRandom(state)
+        elif type == 2:
+            play = playWithAI(state)
+        elif type == 3:
+            play = AIVSRandom(state)     
+        if play:
+            state.makeMove(play)
