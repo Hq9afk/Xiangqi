@@ -47,59 +47,13 @@ def gameScreenManager():
     playerActionPositionList = []
 
     gameButtonList = ()
-    undoButton = b.Button(
-        s.BACKWARD_X,
-        s.BACKWARD_Y,
-        s.BUT_WIDTH,
-        s.BUT_HEIGHT,
-        "undo",
-        l.loadButton("undo"),
-        gameState.undoMove,
-    )
-    redoButton = b.Button(
-        s.NEXTSTEP_X,
-        s.NEXTSTEP_Y,
-        s.BUT_WIDTH,
-        s.BUT_HEIGHT,
-        "redo",
-        l.loadButton("redo"),
-        gameState.redoMove,
-    )
-    swapButton = b.Button(
-        s.REVERSE_X,
-        s.REVERSE_Y,
-        s.BUT_WIDTH,
-        s.BUT_HEIGHT,
-        "swap",
-        l.loadButton("swap"),
-        gameState.swap,
-    )
-    startButton = b.Button(
-        s.START_X,
-        s.START_Y,
-        s.BUT_WIDTH,
-        s.BUT_HEIGHT,
-        "start",
-        l.loadButton("start"),
-        startGame,
-    )
-    returnButton = b.Button(
-        s.REPLAY_X,
-        s.REPLAY_Y,
-        s.BUT_WIDTH,
-        s.BUT_HEIGHT,
-        "return",
-        l.loadButton("return"),
-        returnToMenu,
-    )
+    undoButton = b.Button(s.BACKWARD_X, s.BACKWARD_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "undo", l.loadButton("undo"), gameState.undoMove)
+    redoButton = b.Button(s.NEXTSTEP_X, s.NEXTSTEP_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "redo", l.loadButton("redo"), gameState.redoMove)
+    swapButton = b.Button(s.REVERSE_X, s.REVERSE_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "swap", l.loadButton("swap"), gameState.swap)
+    startButton = b.Button(s.START_X, s.START_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "start", l.loadButton("start"), startGame)
+    returnButton = b.Button(s.REPLAY_X, s.REPLAY_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "return", l.loadButton("return"), returnToMenu)
 
-    gameButtonList += (
-        undoButton,
-        redoButton,
-        swapButton,
-        startButton,
-        returnButton,
-    )
+    gameButtonList += (undoButton, redoButton, swapButton, startButton, returnButton)
 
     # gameMode = -1 means no modes are chosen yet, we are at the main menu
     global gameMode
@@ -140,7 +94,7 @@ def gameScreenManager():
                     if not gameState.redTurn and not gameState.redIsMachine:
                         dp.displayMove(screen, gameState)
                     move = pWM.AIVSRandom(gameState)
-                    if move != None:
+                    if move is not None:
                         gameState.makeMove(move)
             if e.type == p.QUIT:
                 run = False
@@ -148,36 +102,23 @@ def gameScreenManager():
 
             elif e.type == p.MOUSEBUTTONDOWN:
                 # Hide the buttons in "AI vs Random" mode
-                if gameStart == False:
+                if not gameStart:
                     continue
 
                 y_x_margin_and_boxSize = s.GRID
                 mouseCoord = p.mouse.get_pos()
-                row = int(
-                    (mouseCoord[1] - y_x_margin_and_boxSize[0])
-                    // y_x_margin_and_boxSize[2]
-                )
-                col = int(
-                    (mouseCoord[0] - y_x_margin_and_boxSize[1])
-                    // y_x_margin_and_boxSize[2]
-                )
+                row = int((mouseCoord[1] - y_x_margin_and_boxSize[0]) // y_x_margin_and_boxSize[2])
+                col = int((mouseCoord[0] - y_x_margin_and_boxSize[1]) // y_x_margin_and_boxSize[2])
 
                 if row > 9 or col > 8 or row < 0 or col < 0:
                     break
                 if playerActionPositionList == []:
-                    if (gameState.redTurn and gameState.board[row][col][0] == "b") or (
-                        not gameState.redTurn and gameState.board[row][col][0] == "r"
-                    ):
+                    if (gameState.redTurn and gameState.board[row][col][0] == "b") or (not gameState.redTurn and gameState.board[row][col][0] == "r"):
                         break
 
                 playerActionPositionList.append((row, col))
                 if 0 <= row <= 9 and 0 <= col <= 8:
-                    if (
-                        gameState.board[playerActionPositionList[0][0]][
-                            playerActionPositionList[0][1]
-                        ]
-                        == "---"
-                    ):
+                    if gameState.board[playerActionPositionList[0][0]][playerActionPositionList[0][1]] == "---":
                         playerActionPositionList = []
                     else:
                         gameState.selectedCell = playerActionPositionList[0]
@@ -188,11 +129,7 @@ def gameScreenManager():
                         else:
                             validMoveList = gameState.checkValid(gameState.selectedCell)
                             if playerActionPositionList[1] in validMoveList:
-                                move = chessEngine.Move(
-                                    gameState.board,
-                                    playerActionPositionList[0],
-                                    playerActionPositionList[1],
-                                )
+                                move = chessEngine.Move(gameState.board, playerActionPositionList[0], playerActionPositionList[1])
                                 gameState.makeMove(move)
                                 r.checkIllegalMove(gameState)
                                 dp.displayGameState(screen, gameState, gameStart)

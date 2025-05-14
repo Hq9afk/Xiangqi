@@ -6,28 +6,29 @@ import os
 # Load chess pieces
 def loadPiece():
     chessMan = {}
-    chessName = [
-        "bsd",
-        "bhs",
-        "bcn",
-        "bch",
-        "bep",
-        "bad",
-        "bgn",
-        "rsd",
-        "rhs",
-        "rcn",
-        "rch",
-        "rep",
-        "rad",
-        "rgn",
-    ]
+    chessName = ["bsd", "bhs", "bcn", "bch", "bep", "bad", "bgn", "rsd", "rhs", "rcn", "rch", "rep", "rad", "rgn"]
     for i in chessName:
         img_path = os.path.join(os.path.dirname(__file__), f"img/pieces/{i}.png")
-        chessMan[i] = p.transform.scale(
-            p.image.load(img_path), (s.CELL_SIZE, s.CELL_SIZE)
-        )
+        chessMan[i] = p.transform.scale(p.image.load(img_path), (s.CELL_SIZE, s.CELL_SIZE))
     return chessMan
+
+
+# Load button images for different button types
+def loadButton(type):
+    buttonMode = ["Normal", "Active", "Click", "Hover"]
+    buttonList = []
+
+    for mode in buttonMode:
+        img_path = os.path.join(os.path.dirname(__file__), f"img/buttons/{type}{mode}.png")
+        buttonList.append(p.transform.scale(p.image.load(img_path), (s.BUT_WIDTH, s.BUT_HEIGHT)) if os.path.exists(img_path) else None)
+
+    return buttonList
+
+
+# Load main menu background
+def loadMainMenu():
+    img_path = os.path.join(os.path.dirname(__file__), "img/mainMenu.png")
+    return p.transform.scale(p.image.load(img_path), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
 
 
 # Load the board
@@ -44,32 +45,8 @@ def loadValid():
     return light
 
 
-# Load button images for different button types
-def loadButton(type):
-    buttonMode = ["Normal", "Active", "Click", "Hover"]
-    buttonList = []
-
-    for mode in buttonMode:
-        img_path = os.path.join(
-            os.path.dirname(__file__), f"img/buttons/{type}{mode}.png"
-        )
-        buttonList.append(
-            p.transform.scale(p.image.load(img_path), (s.BUT_WIDTH, s.BUT_HEIGHT))
-            if os.path.exists(img_path)
-            else None
-        )
-
-    return buttonList
-
-
 # Load indicator image
 def loadIndicator():
     img_path = os.path.join(os.path.dirname(__file__), "img/indicator.png")
     square = p.transform.scale(p.image.load(img_path), (s.CELL_SIZE, s.CELL_SIZE))
     return square
-
-
-# Load main menu background
-def loadMainMenu():
-    img_path = os.path.join(os.path.dirname(__file__), "img/mainMenu.png")
-    return p.transform.scale(p.image.load(img_path), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))

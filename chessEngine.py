@@ -3,18 +3,7 @@ from copy import deepcopy
 
 
 class Move:
-    rowID = {
-        0: "10",
-        1: "9",
-        2: "8",
-        3: "7",
-        4: "6",
-        5: "5",
-        6: "4",
-        7: "3",
-        8: "2",
-        9: "1",
-    }
+    rowID = {0: "10", 1: "9", 2: "8", 3: "7", 4: "6", 5: "5", 6: "4", 7: "3", 8: "2", 9: "1"}
     colID = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h", 8: "i"}
 
     def __init__(self, board, first, second):
@@ -25,9 +14,7 @@ class Move:
         self.endCol = second[1]
         self.chess_pieceSelected = board[self.startRow][self.startCol]
         self.chess_pieceMoveTo = board[self.endRow][self.endCol]
-        self.moveID = (
-            self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
-        )
+        self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
 
     def getPosition(self, row, col):
         return self.colID[col] + self.rowID[row]
@@ -40,92 +27,20 @@ class State:
     def __init__(self):
         # Initialize the game state with board setup and state variables
         self.board = [
-            [
-                "bch",
-                "bhs",
-                "bep",
-                "bad",
-                "bgn",
-                "bad",
-                "bep",
-                "bhs",
-                "bch",
-            ],  # b = Black
+            ["bch", "bhs", "bep", "bad", "bgn", "bad", "bep", "bhs", "bch"],  # b = Black
             ["---", "---", "---", "---", "---", "---", "---", "---", "---"],  # r = Red
-            [
-                "---",
-                "bcn",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "bcn",
-                "---",
-            ],  # hs = Horse
-            ["bsd", "---", "bsd", "---", "bsd", "---", "bsd", "---", "bsd"],
-            [
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-            ],  # cn = Cannon
-            [
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-            ],  # ep = Elephant
-            [
-                "rsd",
-                "---",
-                "rsd",
-                "---",
-                "rsd",
-                "---",
-                "rsd",
-                "---",
-                "rsd",
-            ],  # ad = Advisor
-            [
-                "---",
-                "rcn",
-                "---",
-                "---",
-                "---",
-                "---",
-                "---",
-                "rcn",
-                "---",
-            ],  # sd = Soldier
-            ["---", "---", "---", "---", "---", "---", "---", "---", "---"],
-            [
-                "rch",
-                "rhs",
-                "rep",
-                "rad",
-                "rgn",
-                "rad",
-                "rep",
-                "rhs",
-                "rch",
-            ],  # gn = General
+            ["---", "bcn", "---", "---", "---", "---", "---", "bcn", "---"],
+            ["bsd", "---", "bsd", "---", "bsd", "---", "bsd", "---", "bsd"],  # sd = Soldier
+            ["---", "---", "---", "---", "---", "---", "---", "---", "---"],  # hs = Horse
+            ["---", "---", "---", "---", "---", "---", "---", "---", "---"],  # cn = Cannon
+            ["rsd", "---", "rsd", "---", "rsd", "---", "rsd", "---", "rsd"],  # ch = Chariot
+            ["---", "rcn", "---", "---", "---", "---", "---", "rcn", "---"],  # ep = Elephant
+            ["---", "---", "---", "---", "---", "---", "---", "---", "---"],  # ad = Advisor
+            ["rch", "rhs", "rep", "rad", "rgn", "rad", "rep", "rhs", "rch"],  # gn = General
         ]
 
         self.redTurn = True  # Red side's turn
-        self.redIsMachine = (
-            False  # After swapping sides, the red side belong to machine
-        )
+        self.redIsMachine = False  # After swapping sides, the red side belong to machine
         self.moveLog = []  # Store all the move
         self.pastMoveStorage = []  # Store all the move when click undo button
         self.selectedCell = ()  # Store the selected cell
@@ -208,9 +123,7 @@ class State:
             return
         nextMoveInStorage = deepcopy(self.pastMoveStorage[-1])
         self.board[nextMoveInStorage.startRow][nextMoveInStorage.startCol] = "---"
-        self.board[nextMoveInStorage.endRow][
-            nextMoveInStorage.endCol
-        ] = nextMoveInStorage.chess_pieceSelected
+        self.board[nextMoveInStorage.endRow][nextMoveInStorage.endCol] = nextMoveInStorage.chess_pieceSelected
         isRedNextTurn = not self.redTurn
         if nextMoveInStorage.chess_pieceSelected[1:] == "gn":
             if isRedNextTurn:
@@ -282,31 +195,9 @@ class State:
                 if board[row][col] != "---":
                     chessPiece = board[row][col][1:]
                     if board[row][col][0] == "r":
-                        ePoint = (
-                            (
-                                ePoint
-                                - power[chessPiece]
-                                - rule.bottomHalfPosition[chessPiece][row][col]
-                            )
-                            if not redIsMachine
-                            else (
-                                ePoint
-                                + power[chessPiece]
-                                + rule.upperHalfPosition[chessPiece][row][col]
-                            )
-                        )
+                        ePoint = (ePoint - power[chessPiece] - rule.bottomHalfPosition[chessPiece][row][col]) if not redIsMachine else (ePoint + power[chessPiece] + rule.upperHalfPosition[chessPiece][row][col])
                     else:
-                        ePoint = (
-                            ePoint
-                            + power[chessPiece]
-                            + rule.upperHalfPosition[chessPiece][row][col]
-                            if not redIsMachine
-                            else (
-                                ePoint
-                                - power[chessPiece]
-                                - rule.bottomHalfPosition[chessPiece][row][col]
-                            )
-                        )
+                        ePoint = ePoint + power[chessPiece] + rule.upperHalfPosition[chessPiece][row][col] if not redIsMachine else (ePoint - power[chessPiece] - rule.bottomHalfPosition[chessPiece][row][col])
         return ePoint
 
 

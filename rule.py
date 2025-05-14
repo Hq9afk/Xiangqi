@@ -2,44 +2,12 @@ import csv
 import os
 
 
-startPower = {
-    "ch": 90,
-    "hs": 40,
-    "ep": 25,
-    "ad": 30,
-    "gn": 9000,
-    "cn": 45,
-    "sd": 10,
-}  # Value of pieces at the start of the game
-midPower = {
-    "ch": 90,
-    "hs": 40,
-    "ep": 25,
-    "ad": 30,
-    "gn": 9000,
-    "cn": 50,
-    "sd": 20,
-}  # Value of pieces at the middle of the game
-endPower = {
-    "ch": 100,
-    "hs": 50,
-    "ep": 40,
-    "ad": 40,
-    "gn": 9000,
-    "cn": 40,
-    "sd": 25,
-}  # Value of pieces at the end of the game
+startPower = {"ch": 90, "hs": 40, "ep": 25, "ad": 30, "gn": 9000, "cn": 45, "sd": 10}  # Value of pieces at the start of the game
+midPower = {"ch": 90, "hs": 40, "ep": 25, "ad": 30, "gn": 9000, "cn": 50, "sd": 20}  # Value of pieces at the middle of the game
+endPower = {"ch": 100, "hs": 50, "ep": 40, "ad": 40, "gn": 9000, "cn": 40, "sd": 25}  # Value of pieces at the end of the game
 
 # Count score at the bottom half of the board
-bottomHalfPosition = {
-    "ch": [],
-    "hs": [],
-    "ep": [],
-    "ad": [],
-    "gn": [],
-    "cn": [],
-    "sd": [],
-}
+bottomHalfPosition = {"ch": [], "hs": [], "ep": [], "ad": [], "gn": [], "cn": [], "sd": []}
 for i in bottomHalfPosition.keys():
     with open(os.path.join(os.path.dirname(__file__), f"score/{i}.csv"), "r") as f:
         reader = csv.reader(f)
@@ -49,15 +17,7 @@ for i in bottomHalfPosition.keys():
             bottomHalfPosition[i] += [row]
 
 # Count score at the upper half of the board
-upperHalfPosition = {
-    "ch": [],
-    "hs": [],
-    "ep": [],
-    "ad": [],
-    "gn": [],
-    "cn": [],
-    "sd": [],
-}
+upperHalfPosition = {"ch": [], "hs": [], "ep": [], "ad": [], "gn": [], "cn": [], "sd": []}
 for i in bottomHalfPosition.keys():
     upperHalfPosition[i] = bottomHalfPosition[i][::-1]
 
@@ -113,85 +73,29 @@ def horseValidMoveList(board, position, redIsMachine):
     col = position[1]
     if col + 1 < 9:
         if board[row][col + 1] == "---":
-            if (
-                col + 2 < 9
-                and row + 1 < 10
-                and (
-                    board[row + 1][col + 2] == "---"
-                    or board[row + 1][col + 2][0] != chessSide
-                )
-            ):
+            if col + 2 < 9 and row + 1 < 10 and (board[row + 1][col + 2] == "---" or board[row + 1][col + 2][0] != chessSide):
                 validMoveList += [(row + 1, col + 2)]
-            if (
-                col + 2 < 9
-                and row - 1 >= 0
-                and (
-                    board[row - 1][col + 2] == "---"
-                    or board[row - 1][col + 2][0] != chessSide
-                )
-            ):
+            if col + 2 < 9 and row - 1 >= 0 and (board[row - 1][col + 2] == "---" or board[row - 1][col + 2][0] != chessSide):
                 validMoveList += [(row - 1, col + 2)]
     if col - 1 >= 0:
         if board[row][col - 1] == "---":
-            if (
-                col - 2 >= 0
-                and row + 1 < 10
-                and (
-                    board[row + 1][col - 2] == "---"
-                    or board[row + 1][col - 2][0] != chessSide
-                )
-            ):
+            if col - 2 >= 0 and row + 1 < 10 and (board[row + 1][col - 2] == "---" or board[row + 1][col - 2][0] != chessSide):
                 validMoveList += [(row + 1, col - 2)]
 
-            if (
-                col - 2 >= 0
-                and row - 1 >= 0
-                and (
-                    board[row - 1][col - 2] == "---"
-                    or board[row - 1][col - 2][0] != chessSide
-                )
-            ):
+            if col - 2 >= 0 and row - 1 >= 0 and (board[row - 1][col - 2] == "---" or board[row - 1][col - 2][0] != chessSide):
                 validMoveList += [(row - 1, col - 2)]
     if row + 1 < 10:
         if board[row + 1][col] == "---":
-            if (
-                col + 1 < 9
-                and row + 2 < 10
-                and (
-                    board[row + 2][col + 1] == "---"
-                    or board[row + 2][col + 1][0] != chessSide
-                )
-            ):
+            if col + 1 < 9 and row + 2 < 10 and (board[row + 2][col + 1] == "---" or board[row + 2][col + 1][0] != chessSide):
                 validMoveList += [(row + 2, col + 1)]
 
-            if (
-                col - 1 >= 0
-                and row + 2 < 10
-                and (
-                    board[row + 2][col - 1] == "---"
-                    or board[row + 2][col - 1][0] != chessSide
-                )
-            ):
+            if col - 1 >= 0 and row + 2 < 10 and (board[row + 2][col - 1] == "---" or board[row + 2][col - 1][0] != chessSide):
                 validMoveList += [(row + 2, col - 1)]
     if row - 1 >= 0:
         if board[row - 1][col] == "---":
-            if (
-                col + 1 < 9
-                and row - 2 >= 0
-                and (
-                    board[row - 2][col + 1] == "---"
-                    or board[row - 2][col + 1][0] != chessSide
-                )
-            ):
+            if col + 1 < 9 and row - 2 >= 0 and (board[row - 2][col + 1] == "---" or board[row - 2][col + 1][0] != chessSide):
                 validMoveList += [(row - 2, col + 1)]
-            if (
-                col - 1 >= 0
-                and row - 2 >= 0
-                and (
-                    board[row - 2][col - 1] == "---"
-                    or board[row - 2][col - 1][0] != chessSide
-                )
-            ):
+            if col - 1 >= 0 and row - 2 >= 0 and (board[row - 2][col - 1] == "---" or board[row - 2][col - 1][0] != chessSide):
                 validMoveList += [(row - 2, col - 1)]
     return validMoveList
 
@@ -202,45 +106,28 @@ def elephantValidMoveList(board, position, redIsMachine):
     chessSide = board[position[0]][position[1]][0]
     row = position[0]
     col = position[1]
-    candidateMoveList = [
-        (row + 2, col + 2),
-        (row + 2, col - 2),
-        (row - 2, col + 2),
-        (row - 2, col - 2),
-    ]
+    candidateMoveList = [(row + 2, col + 2), (row + 2, col - 2), (row - 2, col + 2), (row - 2, col - 2)]
     if not redIsMachine:
         if chessSide == "b":
             for x in candidateMoveList:
                 if 0 <= x[0] < 5 and 0 <= x[1] < 10:
-                    if (
-                        board[int((row + x[0]) / 2)][int((col + x[1]) / 2)] == "---"
-                        and board[x[0]][x[1]][0] != chessSide
-                    ):
+                    if board[int((row + x[0]) / 2)][int((col + x[1]) / 2)] == "---" and board[x[0]][x[1]][0] != chessSide:
                         validMoveList += [x]
         else:
             for x in candidateMoveList:
                 if 4 < x[0] < 10 and 0 <= x[1] < 10:
-                    if (
-                        board[int((row + x[0]) / 2)][int((col + x[1]) / 2)] == "---"
-                        and board[x[0]][x[1]][0] != chessSide
-                    ):
+                    if board[int((row + x[0]) / 2)][int((col + x[1]) / 2)] == "---" and board[x[0]][x[1]][0] != chessSide:
                         validMoveList += [x]
     else:
         if chessSide == "b":
             for x in candidateMoveList:
                 if 5 <= x[0] < 10 and 0 <= x[1] < 10:
-                    if (
-                        board[int((row + x[0]) / 2)][int((col + x[1]) / 2)] == "---"
-                        and board[x[0]][x[1]][0] != chessSide
-                    ):
+                    if board[int((row + x[0]) / 2)][int((col + x[1]) / 2)] == "---" and board[x[0]][x[1]][0] != chessSide:
                         validMoveList += [x]
         else:
             for x in candidateMoveList:
                 if 0 <= x[0] < 6 and 0 <= x[1] < 10:
-                    if (
-                        board[int((row + x[0]) / 2)][int((col + x[1]) / 2)] == "---"
-                        and board[x[0]][x[1]][0] != chessSide
-                    ):
+                    if board[int((row + x[0]) / 2)][int((col + x[1]) / 2)] == "---" and board[x[0]][x[1]][0] != chessSide:
                         validMoveList += [x]
     return validMoveList
 
@@ -251,12 +138,7 @@ def advisorValidMoveList(board, position, redIsMachine):
     row = position[0]
     col = position[1]
     chessSide = board[position[0]][position[1]][0]
-    candidateMoveList = [
-        (row + 1, col + 1),
-        (row + 1, col - 1),
-        (row - 1, col + 1),
-        (row - 1, col - 1),
-    ]
+    candidateMoveList = [(row + 1, col + 1), (row + 1, col - 1), (row - 1, col + 1), (row - 1, col - 1)]
     if not redIsMachine:
         if chessSide == "b":
             for x in candidateMoveList:
@@ -264,7 +146,6 @@ def advisorValidMoveList(board, position, redIsMachine):
                     if board[x[0]][x[1]][0] != chessSide:
                         validMoveList += [x]
         else:
-
             for x in candidateMoveList:
                 if 7 <= x[0] < 10 and 3 <= x[1] < 6:
                     if board[x[0]][x[1]][0] != chessSide:
@@ -512,9 +393,7 @@ def isChecked(board, blackGeneral, redGeneral, redTurn, redIsMachine):
         ]
         for i in horsePositionList:
             if i in candidateGeneralThreatenList:
-                validHorseThreatList = horseValidMoveList(
-                    board, (i[0], i[1]), redIsMachine
-                )
+                validHorseThreatList = horseValidMoveList(board, (i[0], i[1]), redIsMachine)
                 if (x, y) in validHorseThreatList:
                     return True
 
@@ -561,9 +440,7 @@ def isChecked(board, blackGeneral, redGeneral, redTurn, redIsMachine):
                 cannonPositionList += [(row, col)]
     if cannonPositionList != []:
         stayaway = [(x, y), (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
-        candidateGeneralThreatenList = [
-            (a, y) for a in range(10) if (a, y) not in stayaway
-        ] + [(x, b) for b in range(9) if (x, b) not in stayaway]
+        candidateGeneralThreatenList = [(a, y) for a in range(10) if (a, y) not in stayaway] + [(x, b) for b in range(9) if (x, b) not in stayaway]
 
         for i in cannonPositionList:
             if i in candidateGeneralThreatenList:
@@ -578,9 +455,7 @@ def isChecked(board, blackGeneral, redGeneral, redTurn, redIsMachine):
             if board[row][col][1:] == "sd" and board[row][col][0] != chessSide:
                 soldierPostionList += [(row, col)]
     if soldierPostionList != []:
-        candidateGeneralThreatenList = [(x, y + 1), (x, y - 1)] + (
-            [(x - 1, y)] if chessSide == "r" else [(x + 1, y)]
-        )
+        candidateGeneralThreatenList = [(x, y + 1), (x, y - 1)] + ([(x - 1, y)] if chessSide == "r" else [(x + 1, y)])
         for i in soldierPostionList:
             if i in candidateGeneralThreatenList:
                 validSoldierThreatList = soldierValidMoveList(board, i, redIsMachine)
