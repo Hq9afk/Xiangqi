@@ -57,6 +57,7 @@ class Minimax:
                         self.MinimaxSuggestedMove = deepcopy(move)
                 alpha = max(alpha, best)
                 if alpha >= beta:
+                    print(f"1 {alpha} {beta}")
                     break
 
             return best
@@ -84,6 +85,7 @@ class Minimax:
 
                 beta = min(beta, best)
                 if alpha >= beta:
+                    print(f"2 {alpha} {beta}")
                     break
 
             return best
