@@ -6,14 +6,20 @@
 
 1. Install python ([https://www.python.org/downloads/](https://www.python.org/downloads/))
 
-2. Clone this repository to your local device
-   `bash`
-3. Create virtual environment
-   `bash`
-4. Install pygame
-   `bash`
-5. Run the game
-   `bash`
+2. Create and activate virtual environment
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux
+   venv\Scripts\activate  # Windows
+   ```
+3. Install pygame
+   ```bash
+   pip install pygame
+   ```
+4. Run the game
+   ```bash
+   python main.py
+   ```
 
 ## Game mechanics
 
