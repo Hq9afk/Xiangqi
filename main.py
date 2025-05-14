@@ -5,17 +5,13 @@ import chessEngine
 import button as b
 import playWithMachine as pWM
 import displayUI as dp
+import rule as r
 
 
 gameStart = False  # Start game
 returnToMain = False  # Return to main menu
-AI_VS_RANDOM_Mode = False  # Check if Option "AI vs Random" is chosen
+AIVSRandomMode = False  # Check if Option "AI vs Random" is chosen
 gameMode = -1  # Choose mode
-
-"""
-    FUNCTION: startGame
-    use to start create the board
-"""
 
 
 def startGame():
@@ -42,7 +38,7 @@ def quitGame():
 
 
 def gameScreenManager():
-    p.display.set_caption("Xianqi")
+    p.display.set_caption("Xiangqi")
     screen = p.display.set_mode((s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
 
     gameState = chessEngine.State()
@@ -56,7 +52,7 @@ def gameScreenManager():
         s.BACKWARD_Y,
         s.BUT_WIDTH,
         s.BUT_HEIGHT,
-        "re",
+        "undo",
         l.loadButton("undo"),
         gameState.undoMove,
     )
@@ -65,16 +61,16 @@ def gameScreenManager():
         s.NEXTSTEP_Y,
         s.BUT_WIDTH,
         s.BUT_HEIGHT,
-        "ne",
+        "redo",
         l.loadButton("redo"),
         gameState.redoMove,
     )
-    changeChessSideButton = b.specialButton(
+    swapButton = b.Button(
         s.REVERSE_X,
         s.REVERSE_Y,
         s.BUT_WIDTH,
         s.BUT_HEIGHT,
-        "ex",
+        "swap",
         l.loadButton("swap"),
         gameState.swap,
     )
@@ -83,26 +79,26 @@ def gameScreenManager():
         s.START_Y,
         s.BUT_WIDTH,
         s.BUT_HEIGHT,
-        "st",
+        "start",
         l.loadButton("start"),
         startGame,
     )
-    returnToMenuButton = b.specialButton(
+    returnButton = b.Button(
         s.REPLAY_X,
         s.REPLAY_Y,
         s.BUT_WIDTH,
         s.BUT_HEIGHT,
-        "pa",
-        l.loadButton("menu"),
+        "return",
+        l.loadButton("return"),
         returnToMenu,
     )
 
     gameButtonList += (
         undoButton,
         redoButton,
-        changeChessSideButton,
+        swapButton,
         startButton,
-        returnToMenuButton,
+        returnButton,
     )
 
     # gameMode = -1 means no modes are chosen yet, we are at the main menu
@@ -111,7 +107,7 @@ def gameScreenManager():
     while run:
         global gameStart
         global returnToMain
-        global AI_VS_RANDOM_Mode
+        global AIVSRandomMode
 
         for e in p.event.get():
             if not run:
@@ -120,8 +116,8 @@ def gameScreenManager():
             if gameMode != -1:
                 dp.displayGameState(screen, gameState, gameStart)
 
-                for btn in gameButtonList:
-                    btn.process(screen, gameState)
+                for button in gameButtonList:
+                    button.process(screen, gameState)
 
             if gameMode == -1:
                 gameMode = dp.displayMainMenu(screen, gameState)
@@ -140,7 +136,7 @@ def gameScreenManager():
                 elif gameMode == 2:
                     pWM.gameModemanager(gameState, 2)
                 elif gameMode == 3:
-                    AI_VS_RANDOM_Mode = True
+                    AIVSRandomMode = True
                     if not gameState.redTurn and not gameState.redIsMachine:
                         dp.displayMove(screen, gameState)
                     move = pWM.AIVSRandom(gameState)
@@ -151,9 +147,9 @@ def gameScreenManager():
                 break
 
             elif e.type == p.MOUSEBUTTONDOWN:
-
-                if gameStart == False or AI_VS_RANDOM_Mode:
-                    continue  # Hide the buttons in "AI vs Random" mode
+                # Hide the buttons in "AI vs Random" mode
+                if gameStart == False:
+                    continue
 
                 y_x_margin_and_boxSize = s.GRID
                 mouseCoord = p.mouse.get_pos()
@@ -198,6 +194,7 @@ def gameScreenManager():
                                     playerActionPositionList[1],
                                 )
                                 gameState.makeMove(move)
+                                r.checkIllegalMove(gameState)
                                 dp.displayGameState(screen, gameState, gameStart)
                                 clock.tick(s.MAX_FPS)
                                 p.display.flip()

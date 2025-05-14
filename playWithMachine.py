@@ -4,8 +4,10 @@ import chessEngine as s
 
 
 # Minimax algorithm
-'''If your current best result is better than/equal the current worst result your enemy can bring to you, then no need to search that branch anymore because your enemy will definitely only continue to choose the result even more worse than that, or at least equal. Hence you can skip that branch because you know now for sure that you already having a better result stored
-'''
+"""If your current best result is better than/equal the current worst result your enemy can bring to you, then no need to search that branch anymore because your enemy will definitely only continue to choose the result even more worse than that, or at least equal. Hence you can skip that branch because you know now for sure that you already having a better result stored
+"""
+
+
 class Minimax:
     def __init__(self, maxDepth):
         self.maxDepth = maxDepth
@@ -57,7 +59,6 @@ class Minimax:
                         self.MinimaxSuggestedMove = deepcopy(move)
                 alpha = max(alpha, best)
                 if alpha >= beta:
-                    print(f"1 {alpha} {beta}")
                     break
 
             return best
@@ -85,7 +86,6 @@ class Minimax:
 
                 beta = min(beta, best)
                 if alpha >= beta:
-                    print(f"2 {alpha} {beta}")
                     break
 
             return best

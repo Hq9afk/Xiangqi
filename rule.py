@@ -41,8 +41,7 @@ bottomHalfPosition = {
     "sd": [],
 }
 for i in bottomHalfPosition.keys():
-    name = i + ".csv"
-    with open(os.path.join(os.path.dirname(__file__), "unity", name), "r") as f:
+    with open(os.path.join(os.path.dirname(__file__), f"score/{i}.csv"), "r") as f:
         reader = csv.reader(f)
         for row in reader:
             for r in range(len(row)):
@@ -414,40 +413,25 @@ def soldierValidMoveList(board, position, redIsMachine):
 
 
 # valid move list of two tuple [[(),()],...]
-def moveRule(board, position, redIsMachine):  # (), redIsMachine is after
+def moveRule(board, position, redIsMachine):
+    piece_funcs = {
+        "ch": chariotValidMoveList,
+        "hs": horseValidMoveList,
+        "cn": cannonValidMoveList,
+        "gn": GeneralValidMoveList,
+        "ad": advisorValidMoveList,
+        "sd": soldierValidMoveList,
+        "ep": elephantValidMoveList,
+    }
     chessPiece = board[position[0]][position[1]][1:]
-    validMoveList = []
-    if chessPiece == "ch":
-        validMoveList = chariotValidMoveList(board, position, redIsMachine)
-    elif chessPiece == "hs":
-        validMoveList = horseValidMoveList(board, position, redIsMachine)
-    elif chessPiece == "cn":
-        validMoveList = cannonValidMoveList(board, position, redIsMachine)
-    elif chessPiece == "gn":
-        validMoveList = GeneralValidMoveList(board, position, redIsMachine)
-    elif chessPiece == "ad":
-        validMoveList = advisorValidMoveList(board, position, redIsMachine)
-    elif chessPiece == "sd":
-        validMoveList = soldierValidMoveList(board, position, redIsMachine)
-    elif chessPiece == "ep":
-        validMoveList = elephantValidMoveList(board, position, redIsMachine)
-    return validMoveList
+    func = piece_funcs.get(chessPiece)
+    return func(board, position, redIsMachine) if func else []
 
 
 # Function that returns list of valid move with some rules of this game
 def moveCheckValid(board, redTurn, redIsMachine):
     Check = False
-    blackGeneral = ()
-    redGeneral = ()
-
-    for i in range(0, 3):
-        for j in range(3, 6):
-            if board[i][j][1:] == "gn":
-                blackGeneral = (i, j)
-    for i in range(7, 10):
-        for j in range(3, 6):
-            if board[i][j][1:] == "gn":
-                redGeneral = (i, j)
+    blackGeneral, redGeneral = findGenerals(board)
     if redIsMachine:
         blackGeneral, redGeneral = redGeneral, blackGeneral
     if blackGeneral[1] == redGeneral[1]:
@@ -465,6 +449,36 @@ def moveCheckValid(board, redTurn, redIsMachine):
         return False
     return True
     # check it later
+
+
+def checkIllegalMove(gameState):
+    # Find generals' positions
+    blackGeneral, redGeneral = findGenerals(gameState.board)
+    if isChecked(
+        gameState.board,
+        blackGeneral,
+        redGeneral,
+        gameState.redTurn,
+        gameState.redIsMachine,
+    ):
+        print("Illegal move")
+        gameState.undo()
+        return True  # Move was illegal
+    return False  # Move was legal
+
+
+def findGenerals(board):
+    blackGeneral = ()
+    redGeneral = ()
+    for i in range(0, 3):
+        for j in range(3, 6):
+            if board[i][j][1:] == "gn":
+                blackGeneral = (i, j)
+    for i in range(7, 10):
+        for j in range(3, 6):
+            if board[i][j][1:] == "gn":
+                redGeneral = (i, j)
+    return blackGeneral, redGeneral
 
 
 # Function to check if the General is being checked

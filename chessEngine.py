@@ -160,7 +160,7 @@ class State:
                 tmpBlackGeneral = (move.endRow, move.endCol)
 
         if not rule.moveCheckValid(tmpBoard, tmpRedTurn, self.redIsMachine):
-            print("Check")
+            print("Illegal move")
             return False
         else:
             self.board = deepcopy(tmpBoard)

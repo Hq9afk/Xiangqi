@@ -110,9 +110,10 @@ def displayMove(screen, gameState: chessEngine.State):
 
 # Display a banner when the player General gets checked
 def displayCheck(screen, gameState: chessEngine.State):
-    checkMateImg = l.loadCheck()
+    myFont = p.font.SysFont("Comic Sans MS", 30)
+    textSurface = myFont.render("CHECK", False, (0, 0, 0))
     screen.blit(
-        checkMateImg, (s.WIDTH / 2 - checkMateImg.get_width() / 2, s.START_Y + 5)
+        textSurface, (s.WIDTH / 2 - textSurface.get_width() / 2, s.START_Y + 5)
     )
 
 
@@ -120,8 +121,8 @@ def displayCheck(screen, gameState: chessEngine.State):
 def displayResult(screen, gameState: chessEngine.State):
     if gameState.checkMate()[0]:
         winner = "RED" if gameState.checkMate()[1] == "r" else "BLACK"
-        p.font.init()
         print(f"CHECKMATE, {winner} WINS")
+        p.font.init()
         myFont = p.font.SysFont("Comic Sans MS", 30)
         textSurface = myFont.render(f"CHECKMATE, {winner} WINS", False, (0, 0, 0))
         screen.blit(
