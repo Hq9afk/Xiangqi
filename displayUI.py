@@ -10,8 +10,8 @@ validImg = l.loadValid()
 indicatorImg = l.loadIndicator()
 
 
-# This valid move suggestions
-def drawValid(screen, gs):
+# Display valid move suggestions
+def displayValid(screen, gs):
     listValid = gs.checkValid(gs.selectedCell)
     start = s.GRID
     for i in listValid:
@@ -29,29 +29,27 @@ def drawValid(screen, gs):
 check = True
 
 
-# This function draw all the game state
-
-
-def drawGameState(screen, gameState: chessEngine.State, st):
+# Display game state
+def displayGameState(screen, gameState: chessEngine.State, st):
     screen.blit(boardImg, (0, 0))
     global check
-    if gameState.checkEnd()[0]:
-        drawEndGame(screen, gameState)
+    if gameState.checkMate()[0]:
+        displayResult(screen, gameState)
 
-    elif gameState.checkMate() and check:
+    elif gameState.check() and check:
         startTime = p.time.get_ticks()
-        drawCheckMate(screen, gameState)
+        displayCheck(screen, gameState)
         if p.time.get_ticks() - startTime >= 2000:
             check = False
 
     elif (gameState.redIsMachine and gameState.redTurn) or (
         not gameState.redIsMachine and not gameState.redTurn
     ):
-        drawAIThink(screen) if st else None
-    drawChessPiece(screen, gameState.board)
+        displayProcessing(screen) if st else None
+    displayPieces(screen, gameState.board)
 
     if gameState.selectedCell != ():
-        drawValid(screen, gameState)
+        displayValid(screen, gameState)
         screen.blit(
             indicatorImg,
             p.Rect(
@@ -61,15 +59,11 @@ def drawGameState(screen, gameState: chessEngine.State, st):
                 s.CELL_SIZE,
             ),
         )
-    drawLastMove(screen, gameState)
+    displayMove(screen, gameState)
 
 
-"""
-This function draw the chessman on the board
-"""
-
-
-def drawChessPiece(screen, board):
+# Display the pieces
+def displayPieces(screen, board):
     y_x_margin_and_boxSize = s.GRID
     for i in range(s.DIMENSION + 1):
         for j in range(s.DIMENSION):
@@ -86,12 +80,8 @@ def drawChessPiece(screen, board):
                 )
 
 
-"""
-This function draw the last move 
-"""
-
-
-def drawLastMove(screen, gameState: chessEngine.State):
+# Display the most recent move
+def displayMove(screen, gameState: chessEngine.State):
     if gameState.moveLog == []:
         return
     startRow = gameState.moveLog[-1].startRow
@@ -118,49 +108,36 @@ def drawLastMove(screen, gameState: chessEngine.State):
     )
 
 
-"""
-This function is draw when the King is checked
-"""
-
-
-def drawCheckMate(screen, gameState: chessEngine.State):
-    checkMateImg = l.loadCheckMate()
+# Display a banner when the player General gets checked
+def displayCheck(screen, gameState: chessEngine.State):
+    checkMateImg = l.loadCheck()
     screen.blit(
         checkMateImg, (s.WIDTH / 2 - checkMateImg.get_width() / 2, s.START_Y + 5)
     )
 
 
-"""
-This function draw the end game
-"""
-
-
-def drawEndGame(screen, gameState: chessEngine.State):
-    print("End game")
-    if gameState.checkEnd()[0]:
-        winner = "RED" if gameState.checkEnd()[1] == "r" else "BLACK"
+# Display the game result
+def displayResult(screen, gameState: chessEngine.State):
+    if gameState.checkMate()[0]:
+        winner = "RED" if gameState.checkMate()[1] == "r" else "BLACK"
         p.font.init()
-        print(winner, " WIN")
+        print(f"CHECKMATE, {winner} WINS")
         myFont = p.font.SysFont("Comic Sans MS", 30)
-        textSurface = myFont.render(winner + " WIN", False, (0, 0, 0))
+        textSurface = myFont.render(f"CHECKMATE, {winner} WINS", False, (0, 0, 0))
         screen.blit(
             textSurface, (s.WIDTH / 2 - textSurface.get_width() / 2, s.START_Y + 5)
         )
 
 
-"""
-This is the function draw the UI when AI is thinking
-"""
-
-
-def drawAIThink(screen):
+# Display a banner when the AI is processing
+def displayProcessing(screen):
     p.font.init()
     myFont = p.font.SysFont("Comic Sans MS", 30)
-    textSurface = myFont.render("thinking...", False, (167, 133, 96))
+    textSurface = myFont.render("Processing", False, (167, 133, 96))
     screen.blit(textSurface, (s.WIDTH / 2 - textSurface.get_width() / 2, s.START_Y + 5))
 
 
-def drawTitle(screen, x, y, width, height, text):
+def displayTitle(screen, x, y, width, height, text):
     p.font.init()
     tFont = p.font.SysFont("Comic Sans MS", 30)
 
@@ -171,12 +148,8 @@ def drawTitle(screen, x, y, width, height, text):
     return Title
 
 
-"""
-This is the function draw the initial button
-"""
-
-
-def drawButton(screen, x, y, width, height, text):
+# Display the initial buttons
+def displayButton(screen, x, y, width, height, text):
     button_surface = p.Surface((width, height), p.SRCALPHA)
 
     p.font.init()
@@ -190,19 +163,15 @@ def drawButton(screen, x, y, width, height, text):
     return p.Rect(x, y, width, height)
 
 
-"""
-This is the function draw the start screen
-"""
-
-
-def drawGameMenuScreen(screen, gs):
+# Display the main menu
+def displayMainMenu(screen, gs):
     background = l.loadMainMenu()
     screen.blit(background, (0, 0))
 
-    randomBut = drawButton(
+    randomBut = displayButton(
         screen, s.BUTTEXT_X, s.BUTTEXT_Y, s.BUT_TEXT, s.BUT_TEXT / 6, "Play with Random"
     )
-    AIBut = drawButton(
+    AIBut = displayButton(
         screen,
         s.BUTTEXT_X,
         s.BUTTEXT_Y + 110,
@@ -210,7 +179,7 @@ def drawGameMenuScreen(screen, gs):
         s.BUT_TEXT / 6,
         "Play with AI",
     )
-    testBut = drawButton(
+    testBut = displayButton(
         screen,
         s.BUTTEXT_X,
         s.BUTTEXT_Y + 220,

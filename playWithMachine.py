@@ -4,8 +4,8 @@ import chessEngine as s
 
 
 # Minimax algorithm
-
-
+'''If your current best result is better than/equal the current worst result your enemy can bring to you, then no need to search that branch anymore because your enemy will definitely only continue to choose the result even more worse than that, or at least equal. Hence you can skip that branch because you know now for sure that you already having a better result stored
+'''
 class Minimax:
     def __init__(self, maxDepth):
         self.maxDepth = maxDepth
@@ -28,10 +28,9 @@ class Minimax:
             s.State.getAllValid(MinimaxBoard, redTurn, redIsMachine)
         )  # = [ [(),()],[(),()],[(),()] ]
         if depth == 0 or MinimaxNextMoveList == []:
-            return (
-                s.State.evaluate(MinimaxBoard, redTurn, redIsMachine, moveCounter)
-                * (1 if isMaximizingPlayer else -1),
-            )
+            return s.State.evaluate(
+                MinimaxBoard, redTurn, redIsMachine, moveCounter
+            ) * (1 if isMaximizingPlayer else -1)
             # Return value of board which is the score of AI, multiplied by 1 if is Maximizing, else -1
         random.shuffle(MinimaxNextMoveList)
         if isMaximizingPlayer:
@@ -90,7 +89,7 @@ class Minimax:
             return best
 
 
-# Function to generate random move
+# Function to generate random moves
 def playWithRandom(state):
     moveList = deepcopy(
         s.State.getAllValid(state.board, state.redTurn, state.redIsMachine)

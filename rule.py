@@ -285,7 +285,7 @@ def advisorValidMoveList(board, position, redIsMachine):
 
 
 # # Function that returns a list of valid General moves
-def kingValidMoveList(board, position, redIsMachine):
+def GeneralValidMoveList(board, position, redIsMachine):
     validMoveList = []
     row = position[0]
     col = position[1]
@@ -424,7 +424,7 @@ def moveRule(board, position, redIsMachine):  # (), redIsMachine is after
     elif chessPiece == "cn":
         validMoveList = cannonValidMoveList(board, position, redIsMachine)
     elif chessPiece == "gn":
-        validMoveList = kingValidMoveList(board, position, redIsMachine)
+        validMoveList = GeneralValidMoveList(board, position, redIsMachine)
     elif chessPiece == "ad":
         validMoveList = advisorValidMoveList(board, position, redIsMachine)
     elif chessPiece == "sd":
@@ -437,46 +437,46 @@ def moveRule(board, position, redIsMachine):  # (), redIsMachine is after
 # Function that returns list of valid move with some rules of this game
 def moveCheckValid(board, redTurn, redIsMachine):
     Check = False
-    blackKing = ()
-    redKing = ()
+    blackGeneral = ()
+    redGeneral = ()
 
     for i in range(0, 3):
         for j in range(3, 6):
             if board[i][j][1:] == "gn":
-                blackKing = (i, j)
+                blackGeneral = (i, j)
     for i in range(7, 10):
         for j in range(3, 6):
             if board[i][j][1:] == "gn":
-                redKing = (i, j)
+                redGeneral = (i, j)
     if redIsMachine:
-        blackKing, redKing = redKing, blackKing
-    if blackKing[1] == redKing[1]:
-        for i in range(blackKing[0] + 1, redKing[0] + 1):
-            if board[i][blackKing[1]] == "---":
+        blackGeneral, redGeneral = redGeneral, blackGeneral
+    if blackGeneral[1] == redGeneral[1]:
+        for i in range(blackGeneral[0] + 1, redGeneral[0] + 1):
+            if board[i][blackGeneral[1]] == "---":
                 continue
-            elif board[i][blackKing[1]][1:] == "gn":
+            elif board[i][blackGeneral[1]][1:] == "gn":
                 Check = True
                 break
             else:
                 break
         if Check:
             return False
-    if isChecked(board, blackKing, redKing, not redTurn, redIsMachine):
+    if isChecked(board, blackGeneral, redGeneral, not redTurn, redIsMachine):
         return False
     return True
     # check it later
 
 
 # Function to check if the General is being checked
-def isChecked(board, blackKing, redKing, redTurn, redIsMachine):
+def isChecked(board, blackGeneral, redGeneral, redTurn, redIsMachine):
     # Check if the red General is being checked
-    x = blackKing[0]
-    y = blackKing[1]
+    x = blackGeneral[0]
+    y = blackGeneral[1]
     chessSide = "b"
 
     if not redTurn:
-        x = redKing[0]
-        y = redKing[1]
+        x = redGeneral[0]
+        y = redGeneral[1]
         chessSide = "r"
 
     # Horse check
@@ -486,7 +486,7 @@ def isChecked(board, blackKing, redKing, redTurn, redIsMachine):
             if board[row][col][1:] == "hs" and board[row][col][0] != chessSide:
                 horsePositionList += [(row, col)]
     if horsePositionList != []:
-        candidateKingThreatenList = [
+        candidateGeneralThreatenList = [
             (x + 1, y + 2),
             (x + 1, y - 2),
             (x - 1, y + 2),
@@ -497,7 +497,7 @@ def isChecked(board, blackKing, redKing, redTurn, redIsMachine):
             (x - 2, y - 1),
         ]
         for i in horsePositionList:
-            if i in candidateKingThreatenList:
+            if i in candidateGeneralThreatenList:
                 validHorseThreatList = horseValidMoveList(
                     board, (i[0], i[1]), redIsMachine
                 )
@@ -547,12 +547,12 @@ def isChecked(board, blackKing, redKing, redTurn, redIsMachine):
                 cannonPositionList += [(row, col)]
     if cannonPositionList != []:
         stayaway = [(x, y), (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
-        candidateKingThreatenList = [
+        candidateGeneralThreatenList = [
             (a, y) for a in range(10) if (a, y) not in stayaway
         ] + [(x, b) for b in range(9) if (x, b) not in stayaway]
 
         for i in cannonPositionList:
-            if i in candidateKingThreatenList:
+            if i in candidateGeneralThreatenList:
                 validCanonThreatList = cannonValidMoveList(board, i, redIsMachine)
                 if (x, y) in validCanonThreatList:
                     return True
@@ -564,11 +564,11 @@ def isChecked(board, blackKing, redKing, redTurn, redIsMachine):
             if board[row][col][1:] == "sd" and board[row][col][0] != chessSide:
                 soldierPostionList += [(row, col)]
     if soldierPostionList != []:
-        candidateKingThreatenList = [(x, y + 1), (x, y - 1)] + (
+        candidateGeneralThreatenList = [(x, y + 1), (x, y - 1)] + (
             [(x - 1, y)] if chessSide == "r" else [(x + 1, y)]
         )
         for i in soldierPostionList:
-            if i in candidateKingThreatenList:
+            if i in candidateGeneralThreatenList:
                 validSoldierThreatList = soldierValidMoveList(board, i, redIsMachine)
                 if (x, y) in validSoldierThreatList:
                     return True
