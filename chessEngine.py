@@ -141,13 +141,7 @@ class State:
 
     # Check if the current player is in check
     def check(self):
-        return rule.isChecked(
-            self.board,
-            self.blackGeneral,
-            self.redGeneral,
-            not self.redTurn,
-            self.redIsMachine,
-        )
+        return rule.isChecked(self.board, self.blackGeneral, self.redGeneral, not self.redTurn, self.redIsMachine)
 
     # Check if the current player is in checkmate
     def checkMate(self):
@@ -206,8 +200,8 @@ def getNextGameState(board, redTurn, redIsMachine, nextMove):
     tmpBoard = deepcopy(board)
     nextMove = deepcopy(nextMove)
 
-    selectedChess_piece = tmpBoard[nextMove[0][0]][nextMove[0][1]]
+    selectedPiece = tmpBoard[nextMove[0][0]][nextMove[0][1]]
     tmpBoard[nextMove[0][0]][nextMove[0][1]] = "---"
-    tmpBoard[nextMove[1][0]][nextMove[1][1]] = selectedChess_piece
+    tmpBoard[nextMove[1][0]][nextMove[1][1]] = selectedPiece
 
     return tmpBoard

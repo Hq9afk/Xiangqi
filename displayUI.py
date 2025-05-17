@@ -18,29 +18,41 @@ def displayValid(screen, gs):
         screen.blit(validImg, p.Rect(start[1] + i[1] * start[2], start[0] + i[0] * start[2], s.CELL_SIZE, s.CELL_SIZE))
 
 
-check = True
+checkStartTime = None
 
 
-# Display game state
 def displayGameState(screen, gameState: chessEngine.State, st):
+    global checkStartTime
     screen.blit(boardImg, (0, 0))
-    global check
+
+    # Checkmate
     if gameState.checkMate()[0]:
         displayResult(screen, gameState)
 
-    elif gameState.check() and check:
-        startTime = p.time.get_ticks()
-        displayCheck(screen, gameState)
-        if p.time.get_ticks() - startTime >= 2000:
-            check = False
+    # Check banner logic
+    elif gameState.check():
+        currentTime = p.time.get_ticks()
+        # Start timer if just entered check
+        if checkStartTime is None:
+            checkStartTime = currentTime
+        # Show banner for 2 seconds
+        if currentTime - checkStartTime < 2000:
+            displayCheck(screen, gameState)
+        else:
+            checkStartTime = None  # Reset after 2 seconds
+    else:
+        checkStartTime = None  # Reset if not in check
 
-    elif (gameState.redIsMachine and gameState.redTurn) or (not gameState.redIsMachine and not gameState.redTurn):
+    # AI processing banner
+    if (gameState.redIsMachine and gameState.redTurn) or (not gameState.redIsMachine and not gameState.redTurn):
         displayProcessing(screen) if st else None
+
     displayPieces(screen, gameState.board)
 
     if gameState.selectedCell != ():
         displayValid(screen, gameState)
         screen.blit(indicatorImg, p.Rect(s.GRID[1] + gameState.selectedCell[1] * s.GRID[2], s.GRID[0] + gameState.selectedCell[0] * s.GRID[2], s.CELL_SIZE, s.CELL_SIZE))
+
     displayMove(screen, gameState)
 
 
@@ -66,7 +78,7 @@ def displayMove(screen, gameState: chessEngine.State):
     screen.blit(indicatorImg, p.Rect(s.GRID[1] + endCol * s.GRID[2], s.GRID[0] + endRow * s.GRID[2], s.CELL_SIZE, s.CELL_SIZE))
 
 
-# Display a banner when the player General gets checked
+# Display a banner for 2 seconds when the player General gets checked
 def displayCheck(screen, gameState: chessEngine.State):
     myFont = p.font.SysFont("Comic Sans MS", 30)
     textSurface = myFont.render("CHECK", False, (0, 0, 0))
@@ -108,7 +120,7 @@ def displayButton(screen, x, y, width, height, text):
     button_surface = p.Surface((width, height), p.SRCALPHA)
 
     p.font.init()
-    font_path = "impact.ttf"
+    font_path = "utils/impact.ttf"
     tFont = p.font.Font(font_path, 30)
     content = tFont.render(text, True, (230, 200, 100))
     Rect = content.get_rect()
