@@ -7,7 +7,7 @@ DIMENSION = 9 #
 CELL_SIZE = 55 # = 64 # 
 GRID = (80,105,57.5) # RGB color for the grid
 
-MAX_FPS = 15
+MAX_FPS = 1000
 BUT_WIDTH = BUT_HEIGHT = 62.5 # Size of the button
 
 # Button position

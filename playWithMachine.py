@@ -1,61 +1,90 @@
 import random
-from copy import deepcopy
 import chessEngine as s
+import rule
+import time
 
+def all_in_one_copy(original):
+        if original:
+            if isinstance(original, list) and isinstance(original[0], list) and isinstance(original[0][0], str):
+                # board type: list[list[str]]
+                return [row[:] for row in original]
+            elif isinstance(original, list) and isinstance(original[0][0], tuple): 
+                # list of moves: list[list[tuple, tuple]]
+                return [move[:] for move in original]
+            elif isinstance(original, list) and isinstance(original[0], tuple): 
+                return original[:]  # shallow copy is enough 
+            elif isinstance(original, s.Move):
+                return original.copy()
+            elif isinstance(original, dict):
+                # dict[str, int]
+                return original.copy()
+        else:
+            return original[:]  # fallback shallow copy for simple lists
 
 # Minimax algorithm
+# Explain MiniMax algo: If your current best result is better than/equal the current worst result your enemy can bring to you,
+# then no need to search that branch anymore because your enemy will definitely only continue to choose the result even more worse than that,
+# or at least equal. Hence you can skip that branch because you know now for sure that you already having a better result stored.
 class Minimax:
     def __init__(self, maxDepth):
         self.maxDepth = maxDepth
         self.MinimaxSuggestedMove = None
-
+        self.evaluationCounter = 0
     # Method to initiate Minimax
     def initiateMinimax(
         self,
         board,
+        unPredictedBoard, # the real board before Minimax
         redTurn,
         redIsMachine,
         depth,
         isMaximizingPlayer,
         moveCounter,
-        alpha=float("-inf"),
-        beta=float("inf"),
+        preGuessMove,
+        alpha = float("-inf"),
+        beta = float("inf"),
     ):
-        MinimaxBoard = deepcopy(board)
-        MinimaxNextMoveList = deepcopy(
+        MinimaxBoard = all_in_one_copy(board)
+        MinimaxNextMoveList = all_in_one_copy(
             s.State.getAllValid(MinimaxBoard, redTurn, redIsMachine)
         )  # = [ [(),()],[(),()],[(),()] ]
         if depth == 0 or MinimaxNextMoveList == []:
+            self.evaluationCounter +=1
             return s.State.evaluate(
-                MinimaxBoard, redTurn, redIsMachine, moveCounter
-            ) * (1 if isMaximizingPlayer else -1)
-            # Return value of board which is the score of AI, multiplied by 1 if is Maximizing, else -1
+                unPredictedBoard, redTurn, redIsMachine, moveCounter, preGuessMove
+            )
+            # Return value of board which is the score of AI
         random.shuffle(MinimaxNextMoveList)
+        
         if isMaximizingPlayer:
             best = float("-inf")
             for move in MinimaxNextMoveList:
-                nextboard = deepcopy(
-                    s.getNextGameState(
-                        MinimaxBoard, not isMaximizingPlayer, redIsMachine, move
-                    )
+                # print("Max------------------")
+                moveInfo = s.Move(MinimaxBoard, move[0], move[1])
+                
+                nextboard = all_in_one_copy(
+                    s.getNextGameState(MinimaxBoard, move)
                 )
+                preGuessMove.append(moveInfo)
                 value = self.initiateMinimax(
                     nextboard,
+                    unPredictedBoard,
                     not redTurn,
                     redIsMachine,
                     depth - 1,
                     False,
-                    moveCounter + 1,
+                    moveCounter,
+                    preGuessMove,
                     alpha,
                     beta,
                 )
+                preGuessMove.pop()
                 if value > best:
                     best = value
                     if depth == self.maxDepth:
-                        self.MinimaxSuggestedMove = deepcopy(move)
+                        self.MinimaxSuggestedMove = all_in_one_copy(move)
                 alpha = max(alpha, best)
                 if alpha >= beta:
-                    print(f"1 {alpha} {beta}")
                     break
 
             return best
@@ -63,27 +92,33 @@ class Minimax:
         else:
             best = float("inf")
             for move in MinimaxNextMoveList:
-                nextboard = deepcopy(
-                    s.getNextGameState(MinimaxBoard, redTurn, redIsMachine, move)
+                # print("Min------------------")
+                moveInfo = s.Move(MinimaxBoard, move[0], move[1])
+                
+                nextboard = all_in_one_copy(
+                    s.getNextGameState(MinimaxBoard, move)
                 )
+                preGuessMove.append(moveInfo)
                 value = self.initiateMinimax(
                     nextboard,
+                    unPredictedBoard,
                     not redTurn,
                     redIsMachine,
-                    depth - 1,
+                    depth - 1,  
                     True,
-                    moveCounter + 1,
+                    moveCounter,
+                    preGuessMove,
                     alpha,
                     beta,
-                )
+                ) 
+                preGuessMove.pop()
                 if value < best:
                     best = value
                     if depth == self.maxDepth:
-                        self.MinimaxSuggestedMove = deepcopy(move)
+                        self.MinimaxSuggestedMove = all_in_one_copy(move)
 
                 beta = min(beta, best)
                 if alpha >= beta:
-                    print(f"2 {alpha} {beta}")
                     break
 
             return best
@@ -91,7 +126,7 @@ class Minimax:
 
 # Function to generate random moves
 def playWithRandom(state):
-    moveList = deepcopy(
+    moveList = all_in_one_copy(
         s.State.getAllValid(state.board, state.redTurn, state.redIsMachine)
     )
     if moveList != []:
@@ -101,21 +136,31 @@ def playWithRandom(state):
 
 
 # Function to play using Minimax algorithm
+import time  # Add this at the top of your file if not already imported
+
 def playWithAI(state):
-    minimax = Minimax(2)
+    minimax = Minimax(1)
+
+    start_time = time.time()  # ⏱️ Start the timer
     minimax.initiateMinimax(
+        state.board,
         state.board,
         state.redTurn,
         state.redIsMachine,
         minimax.maxDepth,
         True,
         len(state.moveLog),
+        preGuessMove = [],
     )
     move = minimax.MinimaxSuggestedMove
-    if move != None:
+    end_time = time.time()  # ⏱️ End the timer
+    duration = end_time - start_time
+    print(f"Minimax took {duration:.4f} seconds and {minimax.evaluationCounter} evaluations to return a move.")
+    if move is not None:
         m = s.Move(state.board, move[0], move[1])
         return m
     return None
+
 
 
 # Function to let the Minimax algorithm play against the random move generator
