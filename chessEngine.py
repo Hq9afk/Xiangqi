@@ -234,7 +234,6 @@ class State:
         nextMoveInStorage = all_in_one_copy(self.pastMoveStorage[-1])
         self.board[nextMoveInStorage.startRow][nextMoveInStorage.startCol] = "---"
         self.board[nextMoveInStorage.endRow][nextMoveInStorage.endCol] = nextMoveInStorage.chess_pieceSelected
-        isRedNextTurn = not self.redTurn
         self.board[nextMoveInStorage.endRow][nextMoveInStorage.endCol] = nextMoveInStorage.chess_pieceSelected
         redoRedTurn = self.redTurn
         if nextMoveInStorage.chess_pieceSelected[1:] == "gn":
