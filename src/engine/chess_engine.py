@@ -253,7 +253,7 @@ class State:
         print(next_move_in_storage)
 
     def check_valid(self, position):
-        return r.move_rule(self, self.board, position, self.red_is_machine)
+        return r.move_rule(self.board, position, self.red_is_machine)
 
     def check(self):
         return r.is_checked(self.board, self.black_general, self.red_general, not self.turn_of_red, self.red_is_machine)

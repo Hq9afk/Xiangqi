@@ -324,7 +324,7 @@ def check_illegal_move(game_state):
         game_state.board,
         black_general,
         red_general,
-        game_state.red_turn,
+        game_state.turn_of_red,
         game_state.red_is_machine,
     ):
         print("Illegal move")

@@ -25,7 +25,7 @@ class DisplayUI:
 
     def display_valid(self, screen, gs):
         # Display valid moves for the selected piece
-        list_valid = gs.checkValid(gs.selected_cell)
+        list_valid = gs.check_valid(gs.selected_cell)
         start = s.GRID
         for i in list_valid:
             screen.blit(self.valid_img, p.Rect(start[1] + i[1] * start[2], start[0] + i[0] * start[2], s.CELL_SIZE, s.CELL_SIZE))
