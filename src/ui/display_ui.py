@@ -15,7 +15,7 @@ class DisplayUI:
         self.board_img = self.load.load_misc("board")
         self.valid_img = self.load.load_misc("valid")
         self.indicator_img = self.load.load_misc("indicator")
-        self.font_path = os.path.join(os.path.dirname(__file__), "../../asset/UI/Font/impact.ttf")
+        self.font_path = os.path.join(os.path.dirname(__file__), "../../asset/Font/impact.ttf")
         self.check_start_time = None
         self.checkmate_printed = False
 

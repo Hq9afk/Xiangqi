@@ -7,9 +7,9 @@ import src.ui.setting as s
 
 class Loading:
     def __init__(self):
-        self.piece_directory = os.path.join("..", "..", "asset", "UI", "pieces")
-        self.buttons_directory = os.path.join("..", "..", "asset", "UI", "buttons")
-        self.misc_directory = os.path.join("..", "..", "asset", "UI", "misc")
+        self.piece_directory = os.path.join("..", "..", "asset", "images", "pieces")
+        self.buttons_directory = os.path.join("..", "..", "asset", "images", "buttons")
+        self.misc_directory = os.path.join("..", "..", "asset", "images", "misc")
         self.piece_color = ["b", "r"]
         self.piece_name = ["ad", "ch", "cn", "ep", "gn", "hs", "sd"]
         self.button_mode = ["normal", "active", "click", "hover"]
