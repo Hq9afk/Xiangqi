@@ -65,7 +65,7 @@ class Minimax:
             best = float("inf")
             for move in minimax_next_move_list:
                 move_info = e.Move(minimax_board, move[0], move[1])
-                next_board = all_in_one_copy(e.getNextGameState(minimax_board, move))
+                next_board = all_in_one_copy(e.get_next_game_state(minimax_board, move))
                 pre_guess_move.append(move_info)
                 value = self.initiate_minimax(
                     next_board,
