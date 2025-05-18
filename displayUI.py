@@ -15,6 +15,10 @@ class DisplayUI:
         self.indicatorImg = self.load.loadMisc("indicator")
         self.font_path = "utils/impact.ttf"
         self.checkStartTime = None
+        self.checkMatePrinted = False
+
+    def resetFlag(self):
+        self.checkMatePrinted = False
 
     def displayValid(self, screen, gs):
         listValid = gs.checkValid(gs.selectedCell)
@@ -78,13 +82,14 @@ class DisplayUI:
         screen.blit(textSurface, (s.WIDTH / 2 - textSurface.get_width() / 2, s.START_Y + 5))
 
     def displayResult(self, screen, gameState: chessEngine.State):
-        if gameState.checkMate()[0]:
-            winner = "RED" if gameState.checkMate()[1] == "r" else "BLACK"
+        winner = "RED" if gameState.checkMate()[1] == "r" else "BLACK"
+        if not self.checkMatePrinted:
             print(f"CHECKMATE, {winner} WINS")
-            p.font.init()
-            myFont = p.font.SysFont("Comic Sans MS", 30)
-            textSurface = myFont.render(f"CHECKMATE, {winner} WINS", False, (0, 0, 0))
-            screen.blit(textSurface, (s.WIDTH / 2 - textSurface.get_width() / 2, s.START_Y + 5))
+            self.checkMatePrinted = True
+        p.font.init()
+        myFont = p.font.SysFont("Comic Sans MS", 30)
+        textSurface = myFont.render(f"CHECKMATE, {winner} WINS", False, (0, 0, 0))
+        screen.blit(textSurface, (s.WIDTH / 2 - textSurface.get_width() / 2, s.START_Y + 5))
 
     def displayProcessing(self, screen):
         p.font.init()

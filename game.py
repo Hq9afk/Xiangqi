@@ -1,13 +1,14 @@
 import pygame as p
 import setting as s
-from loading import Loading as l
 import chessEngine
 import button as b
 import playWithMachine as pWM
 import rule
 import sys
+import time
 
 from displayUI import DisplayUI as dp
+from loading import Loading as l
 
 
 class Game:
@@ -25,6 +26,7 @@ class Game:
         self.gameButtonList = []
         self.display = dp()
         self.load = l()
+        self.startTime = None
 
     def startGame(self):
         # Callback to start the game.
@@ -47,6 +49,14 @@ class Game:
         self.playerActionPositionList = []
         self.AIVSRandomMode = False
         self.initButtons()
+        self.display.resetFlag()
+        self.matchStartTime = None  # Reset match time
+
+    def getMatchTime(self):
+        # Returns the elapsed match time in seconds, or 0 if not started
+        if self.matchStartTime is None:
+            return 0
+        return int(time.time() - self.matchStartTime)
 
     def quitGame(self):
         # Quit the game and exit.
