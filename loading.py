@@ -9,12 +9,12 @@ miscDir = "utils/UI/misc"
 
 # Load chess pieces
 def loadPiece():
-    piecesList = []
+    piecesList = {}
     pieces = ["bsd", "bhs", "bcn", "bch", "bep", "bad", "bgn", "rsd", "rhs", "rcn", "rch", "rep", "rad", "rgn"]
 
     for i in pieces:
         img_path = os.path.join(os.path.dirname(__file__), f"{piecesDir}/{i}.png")
-        piecesList.append(p.transform.scale(p.image.load(img_path), (s.CELL_SIZE, s.CELL_SIZE)) if os.path.exists(img_path) else None)
+        piecesList[i] = p.transform.scale(p.image.load(img_path), (s.CELL_SIZE, s.CELL_SIZE)) if os.path.exists(img_path) else None
 
     return piecesList
 

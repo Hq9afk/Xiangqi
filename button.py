@@ -2,9 +2,7 @@ import pygame as p
 
 
 class Button:
-    gameStart = False
-
-    def __init__(self, x, y, width, height, type, img, onClickFunction=None):
+    def __init__(self, x, y, width, height, name, img, onClickFunction=None):
         self.x = x
         self.y = y
         self.width = width
@@ -18,41 +16,37 @@ class Button:
         }
         self.state = "normal"
         self.isPress = False
-        self.active = False
-        self.type = type
+        self.name = name  # was 'type'
 
-    def get_state(self, gameState):
+    def get_state(self, gameStart, gameState):
         # Start button: always active unless already clicked
-        if self.type == "start":
-            return "active" if not Button.gameStart else "hidden"
+        if self.name == "start":
+            return "active" if not gameStart else "hidden"
         # Swap: active before game starts, hidden after
-        if self.type == "swap":
-            return "active" if not Button.gameStart else "hidden"
+        if self.name == "swap":
+            return "active" if not gameStart else "hidden"
         # Return: hidden before game starts, active after
-        if self.type == "return":
-            return "active" if Button.gameStart else "hidden"
+        if self.name == "return":
+            return "active" if gameStart else "hidden"
         # Undo/Redo logic
-        if self.type == "undo":
+        if self.name == "undo":
             return "active" if gameState.moveLog else "normal"
-        if self.type == "redo":
+        if self.name == "redo":
             return "active" if getattr(gameState, "pastMoveStorage", []) else "normal"
         return "normal"
 
-    def process(self, screen, gameState):
+    def process(self, screen, gameStart, gameState):
         clickPosition = p.mouse.get_pos()
-        self.state = self.get_state(gameState)
+        self.state = self.get_state(gameStart, gameState)
 
-        # Skip drawing if hidden
+        # Skip drawing and interaction if hidden
         if self.state == "hidden":
             return
 
         interactive = self.state in ("active", "hover")
 
         if interactive:
-            if (
-                self.x <= clickPosition[0] <= self.x + self.width
-                and self.y <= clickPosition[1] <= self.y + self.height
-            ):
+            if self.x <= clickPosition[0] <= self.x + self.width and self.y <= clickPosition[1] <= self.y + self.height:
                 self.state = "hover"
                 if p.mouse.get_pressed()[0]:
                     if not self.isPress:
@@ -60,9 +54,6 @@ class Button:
                         self.isPress = True
                         if self.onClickFunction:
                             self.onClickFunction()
-                        if self.type == "start":
-                            self.active = True
-                            Button.gameStart = True
                 else:
                     self.isPress = False
             else:
