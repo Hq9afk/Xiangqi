@@ -28,10 +28,15 @@ class Minimax:
         beta=float("inf"),
     ):
         minimax_board = all_in_one_copy(board)
-        minimax_next_move_list = all_in_one_copy(e.State.get_all_valid(minimax_board, red_turn, red_is_machine))
+        # Create a State instance for move generation and evaluation
+        state = e.State()
+        state.board = minimax_board
+        state.turn_of_red = red_turn
+        state.red_is_machine = red_is_machine
+        minimax_next_move_list = all_in_one_copy(state.get_all_valid(state.board, state.turn_of_red, state.red_is_machine))
         if depth == 0 or minimax_next_move_list == []:
             self.evaluation_counter += 1
-            return e.State.evaluate(unpredicted_board, red_turn, red_is_machine, move_counter, pre_guess_move)
+            return state.evaluate(unpredicted_board, red_turn, red_is_machine, move_counter, pre_guess_move)
         random.shuffle(minimax_next_move_list)
 
         if is_maximizing_player:
