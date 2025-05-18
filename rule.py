@@ -25,45 +25,45 @@ for i in bottomHalfPosition.keys():
 
 # Funtion that returns a list of valid Chariot moves
 def chariotValidMoveList(board, position, redIsMachine):
-    valideMoveList = []
+    validMoveList = []
     chessSide = board[position[0]][position[1]][0]
     row = position[0]
     col = position[1]
 
     for x in range(row + 1, 10):
         if board[x][col] == "---":
-            valideMoveList += [(x, col)]
+            validMoveList += [(x, col)]
 
         elif board[x][col][0] != chessSide:
-            valideMoveList += [(x, col)]
+            validMoveList += [(x, col)]
             break
         else:
             break
     for x in range(row - 1, -1, -1):
         if board[x][col] == "---":
-            valideMoveList += [(x, col)]
+            validMoveList += [(x, col)]
         elif board[x][col][0] != chessSide:
-            valideMoveList += [(x, col)]
+            validMoveList += [(x, col)]
             break
         else:
             break
     for y in range(col + 1, 9):
         if board[row][y] == "---":
-            valideMoveList += [(row, y)]
+            validMoveList += [(row, y)]
         elif board[row][y][0] != chessSide:
-            valideMoveList += [(row, y)]
+            validMoveList += [(row, y)]
             break
         else:
             break
     for y in range(col - 1, -1, -1):
         if board[row][y] == "---":
-            valideMoveList += [(row, y)]
+            validMoveList += [(row, y)]
         elif board[row][y][0] != chessSide:
-            valideMoveList += [(row, y)]
+            validMoveList += [(row, y)]
             break
         else:
             break
-    return valideMoveList
+    return validMoveList
 
 
 # Function that returns list of valid Horse moves
@@ -177,7 +177,7 @@ def GeneralValidMoveList(board, position, redIsMachine):
             for x in candidateMoveList:
                 if 0 <= x[0] < 3 and 3 <= x[1] < 6:  # Row from 0 to 3, Col from 3 to 5
                     if board[x[0]][x[1]][0] != chessSide:
-                        validMoveList += [x]
+                        validMoveList += [x]    
         else:
             for x in candidateMoveList:
                 if 7 <= x[0] < 10 and 3 <= x[1] < 6:
