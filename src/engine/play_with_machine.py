@@ -1,6 +1,7 @@
 import random
-import chess_engine as s
+import src.engine.chess_engine as s
 import time
+import logging as lg
 
 
 def all_in_one_copy(original):

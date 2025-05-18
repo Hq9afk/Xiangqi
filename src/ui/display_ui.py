@@ -1,9 +1,10 @@
 import pygame as p
-import setting as s
-import chess_engine
+import src.ui.setting as s
+import src.engine.chess_engine as chess_engine
 import time
+import os
 
-from loading import Loading as l
+from src.ui.loading import Loading as l
 
 
 class DisplayUI:
@@ -13,7 +14,7 @@ class DisplayUI:
         self.board_img = self.load.load_misc("board")
         self.valid_img = self.load.load_misc("valid")
         self.indicator_img = self.load.load_misc("indicator")
-        self.font_path = "utils/UI/Font/impact.ttf"
+        self.font_path = os.path.join(os.path.dirname(__file__), "../../utils/UI/Font/impact.ttf")
         self.check_start_time = None
         self.checkmate_printed = False
 

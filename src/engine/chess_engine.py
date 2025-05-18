@@ -1,4 +1,4 @@
-import rule
+import src.engine.rule as rule
 
 test_point_real = 0
 

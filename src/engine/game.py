@@ -1,14 +1,14 @@
 import pygame as p
-import setting as s
-import chess_engine
-import button as b
-import play_with_machine as pwm
-import rule
+import src.ui.setting as s
+import src.engine.chess_engine as chess_engine
+import src.ui.button as b
+import src.engine.play_with_machine as pwm
+import src.engine.rule as rule
 import sys
 import time
 
-from display_ui import DisplayUI as dp
-from loading import Loading as l
+from src.ui.display_ui import DisplayUI as dp
+from src.ui.loading import Loading as l
 
 
 class Game:
