@@ -1,7 +1,7 @@
 import csv
 import os
 
-score_directory = "../../utils/score"
+score_directory = "../../asset/score"
 
 start_power = {"ch": 90, "hs": 40, "ep": 25, "ad": 30, "gn": 9000, "cn": 45, "sd": 10}
 mid_power = {"ch": 90, "hs": 40, "ep": 25, "ad": 30, "gn": 9000, "cn": 50, "sd": 20}

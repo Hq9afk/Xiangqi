@@ -1,29 +1,31 @@
-import pygame as p
-import src.ui.setting as s
-import src.engine.chess_engine as chess_engine
-import src.ui.button as b
-import src.engine.play_with_machine as pwm
-import src.engine.rule as rule
 import sys
 import time
 
+import pygame as p
+
+import src.engine.chess_engine as chess_engine
+import src.engine.rule as r
+import src.ui.button as b
+import src.ui.setting as s
 from src.ui.display_ui import DisplayUI as dp
 from src.ui.loading import Loading as l
+from src.engine.game_mode_manager import GameModeManager as gm
 
 
 class Game:
     def __init__(self):
-        self.game_start = False
-        self.return_to_main = False
         self.ai_vs_random_mode = False
-        self.game_mode = -1
-        self.screen = None
-        self.clock = None
-        self.game_state = None
-        self.player_action_pos_list = []
         self.button_list = []
+        self.clock = None
         self.display = dp()
+        self.game_mode = -1
+        self.game_start = False
+        self.game_state = None
         self.load = l()
+        self.match_start_time = None
+        self.player_action_pos_list = []
+        self.return_to_main = False
+        self.screen = None
         self.start_time = None
 
     def start_game(self):
@@ -41,6 +43,7 @@ class Game:
         p.display.set_caption("Xiangqi")
         self.clock = p.time.Clock()
         self.game_state = chess_engine.State()
+        self.gm = gm(self.game_state)
         self.player_action_pos_list = []
         self.ai_vs_random_mode = False
         self.init_buttons()
@@ -87,7 +90,7 @@ class Game:
                     if self.player_action_pos_list[1] in valid_move_list:
                         move = chess_engine.Move(self.game_state.board, self.player_action_pos_list[0], self.player_action_pos_list[1])
                         self.game_state.make_move(move)
-                        rule.check_illegal_move(self.game_state)
+                        r.check_illegal_move(self.game_state)
                     self.player_action_pos_list = []
                 self.game_state.selected_cell = ()
 
@@ -120,16 +123,16 @@ class Game:
 
             if self.game_start:
                 if self.game_mode == 1:
-                    pwm.game_mode_manager(self.game_state, 1)
+                    self.gm.game_mode_manager(1)
                     self.ai_vs_random_mode = False
                 elif self.game_mode == 2:
-                    pwm.game_mode_manager(self.game_state, 2)
+                    self.gm.game_mode_manager(2)
                     self.ai_vs_random_mode = False
                 elif self.game_mode == 3:
                     self.ai_vs_random_mode = True
                     if not self.game_state.turn_of_red and not self.game_state.red_is_machine:
                         self.display.display_move(self.screen, self.game_state)
-                    move = pwm.ai_vs_random(self.game_state)
+                    move = self.gm.ai_vs_random()
                     if move is not None:
                         self.game_state.make_move(move)
                 else:
