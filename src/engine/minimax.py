@@ -1,6 +1,6 @@
 import random
 
-import src.engine.chess_engine as e
+from src.engine.chess_engine import Move, State
 from src.utils.utils import all_in_one_copy
 
 
@@ -29,7 +29,7 @@ class Minimax:
     ):
         minimax_board = all_in_one_copy(board)
         # Create a State instance for move generation and evaluation
-        state = e.State()
+        state = State()
         state.board = minimax_board
         state.turn_of_red = red_turn
         state.red_is_machine = red_is_machine
@@ -42,8 +42,8 @@ class Minimax:
         if is_maximizing_player:
             best = float("-inf")
             for move in minimax_next_move_list:
-                move_info = e.Move(minimax_board, move[0], move[1])
-                next_board = all_in_one_copy(e.get_next_game_state(minimax_board, move))
+                move_info = Move(minimax_board, move[0], move[1])
+                next_board = all_in_one_copy(state.get_next_game_state(minimax_board, move))
                 pre_guess_move.append(move_info)
                 value = self.initiate_minimax(
                     next_board,
@@ -69,8 +69,8 @@ class Minimax:
         else:
             best = float("inf")
             for move in minimax_next_move_list:
-                move_info = e.Move(minimax_board, move[0], move[1])
-                next_board = all_in_one_copy(e.get_next_game_state(minimax_board, move))
+                move_info = Move(minimax_board, move[0], move[1])
+                next_board = all_in_one_copy(state.get_next_game_state(minimax_board, move))
                 pre_guess_move.append(move_info)
                 value = self.initiate_minimax(
                     next_board,

@@ -34,5 +34,4 @@
 - **Soldier (sd):** Can move one square forward, but cannot move backward.
 
 **Check:** The General is under attack by the opponent's pieces  
-**Checkmate:** The General is checked and there is no legal moves to make  
-**Stalemate:** The game ends in a draw if the player has no legal move to make, even though their General is not checked.
+**Checkmate:** The General is checked and there is no legal moves to make

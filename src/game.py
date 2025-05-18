@@ -4,12 +4,12 @@ import time
 import pygame as p
 
 import src.engine.chess_engine as chess_engine
-import src.engine.rule as r
 import src.ui.button as b
 import src.ui.setting as s
 from src.ui.display_ui import DisplayUI as dp
 from src.ui.loading import Loading as l
 from src.engine.game_mode_manager import GameModeManager as gm
+from src.engine.rule import Rule as r
 
 
 class Game:
@@ -25,8 +25,8 @@ class Game:
         self.match_start_time = None
         self.player_action_pos_list = []
         self.return_to_main = False
+        self.rule = r()
         self.screen = None
-        self.start_time = None
 
     def start_game(self):
         self.game_start = True
@@ -90,7 +90,7 @@ class Game:
                     if self.player_action_pos_list[1] in valid_move_list:
                         move = chess_engine.Move(self.game_state.board, self.player_action_pos_list[0], self.player_action_pos_list[1])
                         self.game_state.make_move(move)
-                        r.check_illegal_move(self.game_state)
+                        self.rule.check_illegal_move(self.game_state)
                     self.player_action_pos_list = []
                 self.game_state.selected_cell = ()
 

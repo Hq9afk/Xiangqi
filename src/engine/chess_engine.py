@@ -1,5 +1,5 @@
 from src.utils.utils import all_in_one_copy
-from engine.rule import Rule as r
+from src.engine.rule import Rule as r
 
 test_point_real = 0
 
@@ -344,15 +344,14 @@ class State:
                 tmp_red_turn = not tmp_red_turn
         return test_point
 
-
-def get_next_game_state(board, next_move):
-    tmp_board = all_in_one_copy(board)
-    if isinstance(next_move, Move):
-        copy_next_move = next_move.copy()
-        tmp_next_move = [(copy_next_move.start_row, copy_next_move.start_col), (copy_next_move.end_row, copy_next_move.end_col)]
-    else:
-        tmp_next_move = all_in_one_copy(next_move)
-    selected_chess_piece = tmp_board[tmp_next_move[0][0]][tmp_next_move[0][1]]
-    tmp_board[tmp_next_move[0][0]][tmp_next_move[0][1]] = "---"
-    tmp_board[tmp_next_move[1][0]][tmp_next_move[1][1]] = selected_chess_piece
-    return tmp_board
+    def get_next_game_state(self, board, next_move):
+        tmp_board = all_in_one_copy(board)
+        if isinstance(next_move, Move):
+            copy_next_move = next_move.copy()
+            tmp_next_move = [(copy_next_move.start_row, copy_next_move.start_col), (copy_next_move.end_row, copy_next_move.end_col)]
+        else:
+            tmp_next_move = all_in_one_copy(next_move)
+        selected_chess_piece = tmp_board[tmp_next_move[0][0]][tmp_next_move[0][1]]
+        tmp_board[tmp_next_move[0][0]][tmp_next_move[0][1]] = "---"
+        tmp_board[tmp_next_move[1][0]][tmp_next_move[1][1]] = selected_chess_piece
+        return tmp_board
