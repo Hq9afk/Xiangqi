@@ -1,12 +1,13 @@
 import pygame as p
 import setting as s
-import loading as l
+from loading import Loading as l
 import chessEngine
 import button as b
 import playWithMachine as pWM
-import displayUI as dp
 import rule
 import sys
+
+from displayUI import DisplayUI as dp
 
 
 class Game:
@@ -22,6 +23,8 @@ class Game:
         self.gameState = None
         self.playerActionPositionList = []
         self.gameButtonList = []
+        self.display = dp()
+        self.load = l()
 
     def startGame(self):
         # Callback to start the game.
@@ -53,11 +56,11 @@ class Game:
     def initButtons(self):
         # Initialize all game control buttons.
         self.gameButtonList = [
-            b.Button(s.BACKWARD_X, s.BACKWARD_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "undo", l.loadButton("undo"), self.gameState.undoMove),
-            b.Button(s.NEXTSTEP_X, s.NEXTSTEP_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "redo", l.loadButton("redo"), self.gameState.redoMove),
-            b.Button(s.REVERSE_X, s.REVERSE_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "swap", l.loadButton("swap"), self.gameState.swap),
-            b.Button(s.START_X, s.START_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "start", l.loadButton("start"), self.startGame),
-            b.Button(s.REPLAY_X, s.REPLAY_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "return", l.loadButton("return"), self.returnToMenu),
+            b.Button(s.BACKWARD_X, s.BACKWARD_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "undo", self.load.loadButton("undo"), self.gameState.undoMove),
+            b.Button(s.NEXTSTEP_X, s.NEXTSTEP_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "redo", self.load.loadButton("redo"), self.gameState.redoMove),
+            b.Button(s.REVERSE_X, s.REVERSE_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "swap", self.load.loadButton("swap"), self.gameState.swap),
+            b.Button(s.START_X, s.START_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "start", self.load.loadButton("start"), self.startGame),
+            b.Button(s.REPLAY_X, s.REPLAY_Y, s.BUT_WIDTH, s.BUT_HEIGHT, "return", self.load.loadButton("return"), self.returnToMenu),
         ]
 
     def handleMouseInput(self, row, col):
@@ -110,9 +113,9 @@ class Game:
 
             # Main menu and game mode selection
             if self.gameMode == -1:
-                self.gameMode = dp.displayMainMenu(self.screen, self.gameState)
+                self.gameMode = self.display.displayMainMenu(self.screen, self.gameState)
             else:
-                dp.displayGameState(self.screen, self.gameState, self.gameStart)
+                self.display.displayGameState(self.screen, self.gameState, self.gameStart)
                 for button in self.gameButtonList:
                     button.process(self.screen, self.gameStart, self.gameState)
 
@@ -127,7 +130,7 @@ class Game:
                 elif self.gameMode == 3:
                     self.AIVSRandomMode = True
                     if not self.gameState.redTurn and not self.gameState.redIsMachine:
-                        dp.displayMove(self.screen, self.gameState)
+                        self.display.displayMove(self.screen, self.gameState)
                     move = pWM.AIVSRandom(self.gameState)
                     if move is not None:
                         self.gameState.makeMove(move)

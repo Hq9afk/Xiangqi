@@ -1,5 +1,4 @@
 import rule
-import time
 
 testPointReal = 0
 
