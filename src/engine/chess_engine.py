@@ -128,7 +128,7 @@ class State:
                 )
             )
             self.turn_of_red = not self.turn_of_red
-            # print(move)
+            print(move)
 
     def undo_move(self):
         print("Before undo: ", test_point_real)

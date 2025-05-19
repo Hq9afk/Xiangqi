@@ -15,6 +15,7 @@ from src.engine.rule import Rule as r
 class Game:
     def __init__(self):
         self.ai_vs_random_mode = False
+        self.ai_vs_ai_mode = False
         self.button_list = []
         self.clock = None
         self.display = dp()
@@ -125,18 +126,30 @@ class Game:
                 if self.game_mode == 1:
                     self.gm.game_mode_manager(1)
                     self.ai_vs_random_mode = False
+                    self.ai_vs_ai_mode = False
                 elif self.game_mode == 2:
                     self.gm.game_mode_manager(2)
                     self.ai_vs_random_mode = False
+                    self.ai_vs_ai_mode = False
                 elif self.game_mode == 3:
                     self.ai_vs_random_mode = True
+                    self.ai_vs_ai_mode = False
                     if not self.game_state.turn_of_red and not self.game_state.red_is_machine:
                         self.display.display_move(self.screen, self.game_state)
-                    move = self.gm.ai_vs_random()
+                    move = self.gm.game_mode_manager(3)
                     if move is not None:
                         self.game_state.make_move(move)
+                elif self.game_mode == 4:
+                    self.ai_vs_random_mode = False
+                    self.ai_vs_ai_mode = True
+                    if not self.game_state.turn_of_red and not self.game_state.red_is_machine:
+                        self.display.display_move(self.screen, self.game_state)
+                    move = self.gm.game_mode_manager(4)
+                    if move is not None:
+                        self.display.display_move(self.screen, self.game_state)
                 else:
                     self.ai_vs_random_mode = False
+                    self.ai_vs_ai_mode = False
 
             if self.return_to_main:
                 self.return_to_main = False

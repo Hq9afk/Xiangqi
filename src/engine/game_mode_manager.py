@@ -53,6 +53,18 @@ class GameModeManager:
             else:
                 return self.play_with_ai()
 
+    def ai_vs_ai(self):
+        if self.state.red_is_machine:
+            if self.state.turn_of_red:
+                return self.play_with_ai()
+            else:
+                return self.play_with_ai()
+        else:
+            if self.state.turn_of_red:
+                return self.play_with_ai()
+            else:
+                return self.play_with_ai()
+
     def game_mode_manager(self, mode):
         # Manage the game mode based on the type
         turn = (self.state.red_is_machine and self.state.turn_of_red) or (not self.state.red_is_machine and not self.state.turn_of_red)

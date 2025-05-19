@@ -136,7 +136,8 @@ class DisplayUI:
 
         random_button = self.display_button(screen, s.BUTTEXT_X, s.BUTTEXT_Y, s.BUT_TEXT, s.BUT_TEXT / 6, "Play with Random")
         ai_button = self.display_button(screen, s.BUTTEXT_X, s.BUTTEXT_Y + 110, s.BUT_TEXT, s.BUT_TEXT / 6, "Play with AI")
-        test_button = self.display_button(screen, s.BUTTEXT_X, s.BUTTEXT_Y + 220, s.BUT_TEXT, s.BUT_TEXT / 6, "Random vs AI")
+        random_vs_ai_button = self.display_button(screen, s.BUTTEXT_X, s.BUTTEXT_Y + 220, s.BUT_TEXT, s.BUT_TEXT / 6, "Random vs AI")
+        ai_vs_ai_button = self.display_button(screen, s.BUTTEXT_X, s.BUTTEXT_Y + 220, s.BUT_TEXT, s.BUT_TEXT / 6, "AI vs AI")
 
         click = p.mouse.get_pressed()[0]
         if click == 1:
@@ -147,7 +148,7 @@ class DisplayUI:
             elif ai_button.collidepoint(mouse):
                 time.sleep(0.2)
                 return 2
-            elif test_button.collidepoint(mouse):
+            elif random_vs_ai_button.collidepoint(mouse):
                 time.sleep(0.2)
                 return 3
         return -1
