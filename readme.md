@@ -8,17 +8,29 @@
 
 2. Create and activate virtual environment
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux
-   venv\Scripts\activate  # Windows
+      python -m venv venv
+      source venv/bin/activate  # Linux
+      venv\Scripts\activate  # Windows
    ```
-3. Install pygame
+3. Install packages
    ```bash
-   pip install pygame
+      pip install -r rquirements.txt
    ```
 4. Run the game
+
    ```bash
-   python main.py
+      python main.py
+   ```
+
+5. To change the maximum level that the minimax algorithm can go down:
+
+   ```bash
+      # 1. Go to src\engine\game_mode_manager.py
+      # 2. Find the following method inside class GameModeManager
+         def game_mode_manager
+      # 3. Find the following:
+         minimax = Minimax(2)
+      # 4. Change the value
    ```
 
 ## Game mechanics

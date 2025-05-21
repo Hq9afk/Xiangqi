@@ -20,8 +20,7 @@ class GameModeManager:
 
     def play_with_ai(self):
         # Play a move using the Minimax AI
-        minimax = Minimax(1)
-        start_time = time.time()
+        minimax = Minimax(2)
         minimax.initiate_minimax(
             self.state.board,
             self.state.board,
@@ -33,9 +32,6 @@ class GameModeManager:
             pre_guess_move=[],
         )
         move = minimax.minimax_suggested_move
-        end_time = time.time()
-        duration = end_time - start_time
-        print(f"Minimax took {duration:.4f} seconds and {minimax.evaluation_counter} evaluations to return a move.")
         if move is not None:
             return e.Move(self.state.board, move[0], move[1])
         return None
