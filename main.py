@@ -5,7 +5,8 @@ import chessEngine
 import button as b
 import playWithMachine as pWM
 import displayUI as dp
-
+import time
+gameStartTime = 0
 
 gameStart = False  # Start game
 returnToMain = False  # Return to main menu
@@ -126,6 +127,8 @@ def gameScreenManager():
                 break
 
             if gameMode != -1:
+                global gameStartTime
+                gameStartTime = time.time()
                 dp.displayGameState(screen, gameState, gameStart)
 
                 for btn in gameButtonList:
