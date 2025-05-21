@@ -1,5 +1,4 @@
 import random
-import time
 
 import src.engine.chess_engine as e
 from src.utils.utils import all_in_one_copy
@@ -52,13 +51,13 @@ class GameModeManager:
     def game_mode_manager(self, mode):
         # Manage the game mode based on the type
         turn = (self.state.red_is_machine and self.state.turn_of_red) or (not self.state.red_is_machine and not self.state.turn_of_red)
-        game_mode = [
-            self.play_with_random,
-            self.play_with_ai,
-            self.ai_vs_random,
-        ]
+        game_mode = {
+            1: self.play_with_random,
+            2: self.play_with_ai,
+            3: self.ai_vs_random,
+        }
         if turn:
             play = None
-            play = game_mode[mode - 1]()
+            play = game_mode[mode]()
             if play:
                 self.state.make_move(play)
