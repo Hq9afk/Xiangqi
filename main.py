@@ -36,7 +36,6 @@ def setup():
     returnToMain = False
     gameStart = False
 
-
 def quitGame():
     p.quit()
 
@@ -113,6 +112,15 @@ def gameScreenManager():
         global returnToMain
         global AI_VS_RANDOM_Mode
 
+        if gameStart and gameMode == 3 and len(p.event.get()) == 0:
+            dp.displayGameState(screen, gameState, gameStart)
+
+            clock.tick(s.MAX_FPS)
+            p.display.flip()
+                
+            AI_VS_RANDOM_Mode = True
+            pWM.gameModemanager(gameState, 3)
+
         for e in p.event.get():
             if not run:
                 break
@@ -141,19 +149,15 @@ def gameScreenManager():
                     pWM.gameModemanager(gameState, 2)
                 elif gameMode == 3:
                     AI_VS_RANDOM_Mode = True
-                    if not gameState.redTurn and not gameState.redIsMachine:
-                        dp.displayMove(screen, gameState)
-                    move = pWM.AIVSRandom(gameState)
-                    if move != None:
-                        gameState.makeMove(move)
+                    pWM.gameModemanager(gameState, 3)
             if e.type == p.QUIT:
                 run = False
                 break
+                
+            elif e.type == p.MOUSEBUTTONDOWN and not (gameStart == False or AI_VS_RANDOM_Mode):
 
-            elif e.type == p.MOUSEBUTTONDOWN:
-
-                if gameStart == False or AI_VS_RANDOM_Mode:
-                    continue  # Hide the buttons in "AI vs Random" mode
+                # if gameStart == False or AI_VS_RANDOM_Mode:
+                #     continue  # Hide the buttons in "AI vs Random" mode
 
                 y_x_margin_and_boxSize = s.GRID
                 mouseCoord = p.mouse.get_pos()

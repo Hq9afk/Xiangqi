@@ -8,7 +8,8 @@ pieceImg = l.loadPiece()
 boardImg = l.loadBoard()
 validImg = l.loadValid()
 indicatorImg = l.loadIndicator()
-
+gameStartTime = 0
+gameEndTime = 0
 
 # Display valid move suggestions
 def displayValid(screen, gs):
@@ -31,6 +32,9 @@ check = True
 
 # Display game state
 def displayGameState(screen, gameState: chessEngine.State, st):
+    global gameStartTime
+    if gameStartTime == 0:
+        gameStartTime = time.time()
     screen.blit(boardImg, (0, 0))
     global check
     if gameState.checkMate()[0]:
@@ -119,11 +123,15 @@ def displayCheck(screen, gameState: chessEngine.State):
 # Display the game result
 def displayResult(screen, gameState: chessEngine.State):
     if gameState.checkMate()[0]:
+        global gameEndTime
+        if gameEndTime == 0:
+            gameEndTime = time.time()
         winner = "RED" if gameState.checkMate()[1] == "r" else "BLACK"
         p.font.init()
-        print(f"CHECKMATE, {winner} WINS")
+        gameTime = gameEndTime - gameStartTime
+        print(f"CHECKMATE, {winner} WINS in {gameTime:.0f}s")
         myFont = p.font.SysFont("Comic Sans MS", 30)
-        textSurface = myFont.render(f"CHECKMATE, {winner} WINS", False, (0, 0, 0))
+        textSurface = myFont.render(f"CHECKMATE, {winner} WINS in {gameTime:.0f}s", False, (0, 0, 0))
         screen.blit(
             textSurface, (s.WIDTH / 2 - textSurface.get_width() / 2, s.START_Y + 5)
         )

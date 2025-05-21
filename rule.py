@@ -1,6 +1,77 @@
 import csv
 import os
+import chessEngine as s
 
+def encode_pos(row, col):
+    return row * 10 + col
+
+def decode_pos(pos):
+    return pos // 10, pos % 10
+
+def add_piece_position(data, piece, row, col):
+    pos = encode_pos(row, col)
+    if piece in data:
+        data[piece] = data[piece] | frozenset([pos])
+    else:
+        data[piece] = frozenset([pos])
+
+def remove_piece_position(data, piece, row, col):
+    pos = encode_pos(row, col)
+    if piece in data and pos in data[piece]:
+        data[piece] = data[piece] - frozenset([pos])
+
+def search_piece_position(data, piece, row, col):
+    pos = encode_pos(row, col)
+    if piece in data and pos in data[piece]:
+        return decode_pos(pos)  # return as (row, col)
+    return None
+
+def change_piece_position(data, piece, old_row, old_col, new_row, new_col):
+    old_pos = encode_pos(old_row, old_col)
+    new_pos = encode_pos(new_row, new_col)
+    if piece in data and old_pos in data[piece]:
+        data[piece] = (data[piece] - frozenset([old_pos])) | frozenset([new_pos])
+        
+def get_chess_piece_positions(data, piece):
+    if piece not in data:
+        return []
+    # data[piece] is a frozenset of encoded positions
+    return [decode_pos(pos) for pos in data[piece]]
+
+def universal_chess_piece_dict_update(red_data, black_data, chess_pieceSelected, chess_pieceMoveTo, 
+                                      startRow, startCol, endRow, endCol):
+    if chess_pieceSelected[0] == 'r':
+        change_piece_position(red_data, chess_pieceSelected[1:],
+                                        startRow, startCol, endRow, endCol)
+        if chess_pieceMoveTo != "---":
+                remove_piece_position(black_data, chess_pieceMoveTo[1:], endRow, endCol)
+    else:
+        change_piece_position(black_data, chess_pieceSelected[1:],
+                                           startRow, startCol, endRow, endCol)
+        if chess_pieceMoveTo != "---":
+                remove_piece_position(red_data, chess_pieceMoveTo[1:], endRow, endCol)
+
+testPointReal = 0
+def all_in_one_copy(original):
+        if original:
+            if isinstance(original, list) and isinstance(original[0], list) and isinstance(original[0][0], str):
+                # board type: list[list[str]]
+                return [row[:] for row in original]
+            elif isinstance(original, list) and isinstance(original[0][0], tuple): 
+                # list of moves: list[list[tuple, tuple]]
+                return [move[:] for move in original]
+            elif isinstance(original, list) and isinstance(original[0], tuple): 
+                return original[:]  # shallow copy is enough 
+            elif isinstance(original, s.Move):
+                return original.copy()
+            elif isinstance(original, dict):
+                first_val = next(iter(original.values()))
+                if isinstance(first_val, int):
+                    return original.copy()
+                elif isinstance(first_val, frozenset):
+                    return dict(original)
+        else:
+            return original  # return as-is for unknown types
 
 startPower = {
     "ch": 90,
@@ -65,45 +136,45 @@ for i in bottomHalfPosition.keys():
 
 # Funtion that returns a list of valid Chariot moves
 def chariotValidMoveList(board, position, redIsMachine):
-    valideMoveList = []
+    validMoveList = []
     chessSide = board[position[0]][position[1]][0]
     row = position[0]
     col = position[1]
 
     for x in range(row + 1, 10):
         if board[x][col] == "---":
-            valideMoveList += [(x, col)]
+            validMoveList += [(x, col)]
 
         elif board[x][col][0] != chessSide:
-            valideMoveList += [(x, col)]
+            validMoveList += [(x, col)]
             break
         else:
             break
     for x in range(row - 1, -1, -1):
         if board[x][col] == "---":
-            valideMoveList += [(x, col)]
+            validMoveList += [(x, col)]
         elif board[x][col][0] != chessSide:
-            valideMoveList += [(x, col)]
+            validMoveList += [(x, col)]
             break
         else:
             break
     for y in range(col + 1, 9):
         if board[row][y] == "---":
-            valideMoveList += [(row, y)]
+            validMoveList += [(row, y)]
         elif board[row][y][0] != chessSide:
-            valideMoveList += [(row, y)]
+            validMoveList += [(row, y)]
             break
         else:
             break
     for y in range(col - 1, -1, -1):
         if board[row][y] == "---":
-            valideMoveList += [(row, y)]
+            validMoveList += [(row, y)]
         elif board[row][y][0] != chessSide:
-            valideMoveList += [(row, y)]
+            validMoveList += [(row, y)]
             break
         else:
             break
-    return valideMoveList
+    return validMoveList
 
 
 # Function that returns list of valid Horse moves
@@ -296,7 +367,7 @@ def GeneralValidMoveList(board, position, redIsMachine):
             for x in candidateMoveList:
                 if 0 <= x[0] < 3 and 3 <= x[1] < 6:  # Row from 0 to 3, Col from 3 to 5
                     if board[x[0]][x[1]][0] != chessSide:
-                        validMoveList += [x]
+                        validMoveList += [x]    
         else:
             for x in candidateMoveList:
                 if 7 <= x[0] < 10 and 3 <= x[1] < 6:
@@ -435,23 +506,14 @@ def moveRule(board, position, redIsMachine):  # (), redIsMachine is after
 
 
 # Function that returns list of valid move with some rules of this game
-def moveCheckValid(board, redTurn, redIsMachine):
+def moveCheckValid(board, red_chess_piece_pos_dict, black_chess_piece_pos_dict, redTurn, redIsMachine):
     Check = False
-    blackGeneral = ()
-    redGeneral = ()
-
-    for i in range(0, 3):
-        for j in range(3, 6):
-            if board[i][j][1:] == "gn":
-                blackGeneral = (i, j)
-    for i in range(7, 10):
-        for j in range(3, 6):
-            if board[i][j][1:] == "gn":
-                redGeneral = (i, j)
-    if redIsMachine:
-        blackGeneral, redGeneral = redGeneral, blackGeneral
+    blackGeneral = get_chess_piece_positions(black_chess_piece_pos_dict, "gn")[0]
+    redGeneral = get_chess_piece_positions(red_chess_piece_pos_dict, "gn")[0]
+        
+    step = 1 if blackGeneral[0] < redGeneral[0] else -1
     if blackGeneral[1] == redGeneral[1]:
-        for i in range(blackGeneral[0] + 1, redGeneral[0] + 1):
+        for i in range(blackGeneral[0] + step, redGeneral[0] + step, step):
             if board[i][blackGeneral[1]] == "---":
                 continue
             elif board[i][blackGeneral[1]][1:] == "gn":
@@ -461,30 +523,32 @@ def moveCheckValid(board, redTurn, redIsMachine):
                 break
         if Check:
             return False
-    if isChecked(board, blackGeneral, redGeneral, not redTurn, redIsMachine):
+    if isChecked(board, blackGeneral, redGeneral, red_chess_piece_pos_dict, black_chess_piece_pos_dict, not redTurn, redIsMachine):
         return False
     return True
     # check it later
 
 
 # Function to check if the General is being checked
-def isChecked(board, blackGeneral, redGeneral, redTurn, redIsMachine):
+def isChecked(board, blackGeneral, redGeneral, red_chess_piece_pos_dict, black_chess_piece_pos_dict, redTurn, redIsMachine):
     # Check if the red General is being checked
-    x = blackGeneral[0]
-    y = blackGeneral[1]
-    chessSide = "b"
-
-    if not redTurn:
+    x = 0
+    y = 0
+    chessSide = ''
+    chess_piece_pos_dict = {}
+    if redTurn:
+        x = blackGeneral[0]
+        y = blackGeneral[1]
+        chessSide = "b"
+        chess_piece_pos_dict = red_chess_piece_pos_dict
+    else:
         x = redGeneral[0]
         y = redGeneral[1]
         chessSide = "r"
+        chess_piece_pos_dict = black_chess_piece_pos_dict
 
     # Horse check
-    horsePositionList = []
-    for row in range(10):
-        for col in range(9):
-            if board[row][col][1:] == "hs" and board[row][col][0] != chessSide:
-                horsePositionList += [(row, col)]
+    horsePositionList = get_chess_piece_positions(chess_piece_pos_dict, "hs")
     if horsePositionList != []:
         candidateGeneralThreatenList = [
             (x + 1, y + 2),
@@ -505,11 +569,7 @@ def isChecked(board, blackGeneral, redGeneral, redTurn, redIsMachine):
                     return True
 
     # Chariot check
-    chariotPositionList = []
-    for row in range(10):
-        for col in range(9):
-            if board[row][col][1:] == "ch" and board[row][col][0] != chessSide:
-                chariotPositionList += [(row, col)]
+    chariotPositionList = get_chess_piece_positions(chess_piece_pos_dict, "ch")
     if chariotPositionList != []:
         for i in chariotPositionList:
             if i[0] == x:
@@ -540,11 +600,7 @@ def isChecked(board, blackGeneral, redGeneral, redTurn, redIsMachine):
                             break
 
     # Cannon check
-    cannonPositionList = []
-    for row in range(10):
-        for col in range(9):
-            if board[row][col][1:] == "cn" and board[row][col][0] != chessSide:
-                cannonPositionList += [(row, col)]
+    cannonPositionList = get_chess_piece_positions(chess_piece_pos_dict, "cn")
     if cannonPositionList != []:
         stayaway = [(x, y), (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
         candidateGeneralThreatenList = [
@@ -558,11 +614,7 @@ def isChecked(board, blackGeneral, redGeneral, redTurn, redIsMachine):
                     return True
 
     # Soldier check
-    soldierPostionList = []
-    for row in range(10):
-        for col in range(9):
-            if board[row][col][1:] == "sd" and board[row][col][0] != chessSide:
-                soldierPostionList += [(row, col)]
+    soldierPostionList = get_chess_piece_positions(chess_piece_pos_dict, "sd")
     if soldierPostionList != []:
         candidateGeneralThreatenList = [(x, y + 1), (x, y - 1)] + (
             [(x - 1, y)] if chessSide == "r" else [(x + 1, y)]
