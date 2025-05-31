@@ -5,6 +5,7 @@ import chessEngine
 import button as b
 import playWithMachine as pWM
 import displayUI as dp
+import xiangqi_cpp as engine
 
 
 gameStart = False  # Start game

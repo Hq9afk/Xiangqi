@@ -1,40 +1,37 @@
-import rule
-import random
+import xiangqi_cpp as engine
 from copy import deepcopy
-import time
+import numpy as np
+import cProfile
 
 def encode_pos(row, col):
     return row * 10 + col
 
 def decode_pos(pos):
-    return pos // 10, pos % 10
+    return (pos // 10, pos % 10)
 
 def add_piece_position(data, piece, row, col):
     pos = encode_pos(row, col)
-    if piece in data:
-        data[piece] = data[piece] | frozenset([pos])
-    else:
-        data[piece] = frozenset([pos])
+    data[piece] = np.append(data[piece], pos)
 
 def remove_piece_position(data, piece, row, col):
     pos = encode_pos(row, col)
-    if piece in data and pos in data[piece]:
-        data[piece] = data[piece] - frozenset([pos])
-
-def search_piece_position(data, piece, row, col):
-    pos = encode_pos(row, col)
-    if piece in data and pos in data[piece]:
-        return decode_pos(pos)  # return as (row, col)
-    return None
+    if piece in data:
+        arr = data[piece]
+        # Find and remove the position
+        mask = arr != pos
+        data[piece] = arr[mask]  # Keep only positions that don't match
 
 def change_piece_position(data, piece, old_row, old_col, new_row, new_col):
     old_pos = encode_pos(old_row, old_col)
     new_pos = encode_pos(new_row, new_col)
-    if piece in data and old_pos in data[piece]:
-        data[piece] = (data[piece] - frozenset([old_pos])) | frozenset([new_pos])
+    arr = data[piece]
+    # Find and update position
+    idx = np.where(arr == old_pos)[0]
+    if len(idx) > 0:
+        arr[idx[0]] = new_pos
         
 def get_all_chess_piece_positions(data):
-    return [decode_pos(pos) for positions in data.values() for pos in positions]
+    return [decode_pos(pos) for positions in data.values() for pos in positions.tolist()]
 
 
 def universal_chess_piece_dict_update(red_data, black_data, chess_pieceSelected, chess_pieceMoveTo, 
@@ -64,26 +61,10 @@ def universal_chess_piece_dict_reverse(red_data, black_data, chess_pieceSelected
             add_piece_position(red_data, chess_pieceMoveTo[1:], endRow, endCol)
 
 testPointReal = 0
-def all_in_one_copy(original):
-        if original:
-            if isinstance(original, list) and isinstance(original[0], list) and isinstance(original[0][0], str):
-                # board type: list[list[str]]
-                return [row[:] for row in original]
-            elif isinstance(original, list) and isinstance(original[0][0], tuple): 
-                # list of moves: list[list[tuple, tuple]]
-                return [move[:] for move in original]
-            elif isinstance(original, list) and isinstance(original[0], tuple): 
-                return original[:]  # shallow copy is enough 
-            elif isinstance(original, Move):
-                return original.copy()
-            elif isinstance(original, dict):
-                first_val = next(iter(original.values()))
-                if isinstance(first_val, int):
-                    return original.copy()
-                elif isinstance(first_val, frozenset):
-                    return dict(original)
-        else:
-            return original  # return as-is for unknown types
+        
+def copy_pieces_pos_dict(original):
+    return {k: v.copy() for k, v in original.items()}
+
 
 class Move:
     rowID = {
@@ -124,39 +105,57 @@ class Move:
 class State:
     def __init__(self):
         # Initialize the game state with board setup and state variables
-        self.board = [
-            ["bch","bhs","bep","bad","bgn","bad","bep","bhs","bch",],  # b = Black
-            ["---","---","---","---","---","---","---","---","---",],  # r = Red
-            ["---","bcn","---","---","---","---","---","bcn","---",],  # hs = Horse
-            ["bsd","---","bsd","---","bsd","---","bsd","---","bsd",],
-            ["---","---","---","---","---","---","---","---","---",],  # cn = Cannon
-            ["---","---","---","---","---","---","---","---","---",],  # ep = Elephant
-            ["rsd","---","rsd","---","rsd","---","rsd","---","rsd",],  # ad = Advisor
-            ["---","rcn","---","---","---","---","---","rcn","---",],  # sd = Soldier
-            ["---","---","---","---","---","---","---","---","---",],
-            ["rch","rhs","rep","rad","rgn","rad","rep","rhs","rch",],  # gn = General
-        ]
-
-        self.red_chess_piece_pos_dict = {
-            "ch": frozenset([90, 98]),
-            "hs": frozenset([91, 97]),
-            "cn": frozenset([71, 77]),
-            "sd": frozenset([60, 62, 64, 66, 68]),
-            "ep": frozenset([92, 96]),
-            "ad": frozenset([93, 95]),
-            "gn": frozenset([94]),
+        #    """Initialize the Xiangqi board with NumPy array"""
+        # Create empty board (10 rows, 9 columns) with 3-character strings
+        self.board = np.full((10, 9), '---', dtype='U3')
+        
+        # Black pieces (top side)
+        self.board[0] = ['bch', 'bhs', 'bep', 'bad', 'bgn', 'bad', 'bep', 'bhs', 'bch']
+        self.board[2, [1, 7]] = 'bcn'  # Cannons
+        self.board[3, [0, 2, 4, 6, 8]] = 'bsd'  # Soldiers
+    
+    # Red pieces (bottom side)
+        self.board[9] = ['rch', 'rhs', 'rep', 'rad', 'rgn', 'rad', 'rep', 'rhs', 'rch']
+        self.board[7, [1, 7]] = 'rcn'  # Cannons
+        self.board[6, [0, 2, 4, 6, 8]] = 'rsd'  # Soldiers
+        
+        self.red_chess_piece_pos_dict =  {
+            'ch': np.zeros((2,), dtype=int),    # Chariots (max 2)
+            'hs': np.zeros((2,), dtype=int),    # Horses
+            'cn': np.zeros((2,), dtype=int),    # Cannons
+            'sd': np.zeros((5,), dtype=int),    # Soldiers
+            'ep': np.zeros((2,), dtype=int),    # Elephants
+            'ad': np.zeros((2,), dtype=int),    # Advisors
+            'gn': np.zeros((1,), dtype=int)     # General
         }
         
         self.black_chess_piece_pos_dict = {
-            "ch": frozenset([0, 8]),
-            "hs": frozenset([1, 7]),
-            "cn": frozenset([21, 27]),
-            "sd": frozenset([30, 32, 34, 36, 38]),
-            "ep": frozenset([2, 6]),
-            "ad": frozenset([3, 5]),
-            "gn": frozenset([4]),
+            'ch': np.zeros((2,), dtype=int),
+            'hs': np.zeros((2,), dtype=int),
+            'cn': np.zeros((2,), dtype=int),
+            'sd': np.zeros((5,), dtype=int),
+            'ep': np.zeros((2,), dtype=int),
+            'ad': np.zeros((2,), dtype=int),
+            'gn': np.zeros((1,), dtype=int)
         }
-
+        # Red pieces (bottom)
+        self.red_chess_piece_pos_dict['ch'][:] = [90, 98]
+        self.red_chess_piece_pos_dict['hs'][:] = [91, 97]
+        self.red_chess_piece_pos_dict['cn'][:] = [71, 77]
+        self.red_chess_piece_pos_dict['sd'][:] = [60, 62, 64, 66, 68]
+        self.red_chess_piece_pos_dict['ep'][:] = [92, 96]
+        self.red_chess_piece_pos_dict['ad'][:] = [93, 95]
+        self.red_chess_piece_pos_dict['gn'][:] = [94]
+        
+        # Black pieces (top)
+        self.black_chess_piece_pos_dict['ch'][:] = [0, 8]
+        self.black_chess_piece_pos_dict['hs'][:] = [1, 7]
+        self.black_chess_piece_pos_dict['cn'][:] = [21, 27]
+        self.black_chess_piece_pos_dict['sd'][:] = [30, 32, 34, 36, 38]
+        self.black_chess_piece_pos_dict['ep'][:] = [2, 6]
+        self.black_chess_piece_pos_dict['ad'][:] = [3, 5]
+        self.black_chess_piece_pos_dict['gn'][:] = [4]
+        
         self.redTurn = True  # Red side's turn
         self.redIsMachine = (
             False  # After swapping sides, the red side belong to machine
@@ -167,7 +166,7 @@ class State:
         self.blackGeneral = (0, 4)  # Store the position of black General
         self.redGeneral = (9, 4)  # Store the position of red General
         self.isGameStart = False  # Check if the game begins
-
+    
     # Reverse the board before playing
     def swap(self):
         for i in range(10):
@@ -176,16 +175,36 @@ class State:
                     self.board[i][j] = "b" + self.board[i][j][1:]
                 elif self.board[i][j][0] == "b":
                     self.board[i][j] = "r" + self.board[i][j][1:]
+                    
+        self.black_chess_piece_pos_dict = {
+            "ch": frozenset([90, 98]),
+            "hs": frozenset([91, 97]),
+            "cn": frozenset([71, 77]),
+            "sd": frozenset([60, 62, 64, 66, 68]),
+            "ep": frozenset([92, 96]),
+            "ad": frozenset([93, 95]),
+            "gn": frozenset([94]),
+        }
+        
+        self.red_chess_piece_pos_dict = {
+            "ch": frozenset([0, 8]),
+            "hs": frozenset([1, 7]),
+            "cn": frozenset([21, 27]),
+            "sd": frozenset([30, 32, 34, 36, 38]),
+            "ep": frozenset([2, 6]),
+            "ad": frozenset([3, 5]),
+            "gn": frozenset([4]),
+        }
         self.blackGeneral, self.redGeneral = self.redGeneral, self.blackGeneral
         self.redIsMachine = not self.redIsMachine
     
     # Make a move, update the board and moveLog
     def makeMove(self, move: Move):
-        tmpBoard = all_in_one_copy(self.board)
+        tmpBoard = np.copy(self.board)
         tmpRedTurn = self.redTurn
         tmpBlackGeneral, tmpRedGeneral = self.blackGeneral, self.redGeneral
-        tmpRed_chess_piece_pos_dict = all_in_one_copy(self.red_chess_piece_pos_dict)
-        tmpBlack_chess_piece_pos_dict = all_in_one_copy(self.black_chess_piece_pos_dict)
+        tmpRed_chess_piece_pos_dict = copy_pieces_pos_dict(self.red_chess_piece_pos_dict)
+        tmpBlack_chess_piece_pos_dict = copy_pieces_pos_dict(self.black_chess_piece_pos_dict)
         
         tmpBoard[move.startRow][move.startCol] = "---"
         tmpBoard[move.endRow][move.endCol] = move.chess_pieceSelected
@@ -205,7 +224,7 @@ class State:
                 (self.redTurn and not self.redIsMachine) or (not self.redTurn and self.redIsMachine)  # Human's turn
                 )
         
-        if isHumanMove and not rule.moveCheckValid(tmpBoard, tmpRed_chess_piece_pos_dict, tmpBlack_chess_piece_pos_dict, tmpRedTurn, self.redIsMachine):
+        if isHumanMove and not engine.moveCheckValid(tmpBoard, tmpRed_chess_piece_pos_dict, tmpBlack_chess_piece_pos_dict, tmpRedTurn, self.redIsMachine):
                 print("Check")
         else:
             self.board = tmpBoard
@@ -218,41 +237,41 @@ class State:
             self.pastMoveStorage = []
             
             if len(self.moveLog) >= 0 and len(self.moveLog) <= 14:
-                power = rule.startPower
+                power = engine.startPower
             elif len(self.moveLog) >= 14 and len(self.moveLog) <= 50:
-                power = rule.midPower
+                power = engine.midPower
             else:
-                power = rule.endPower
-            self.moveLog.append(all_in_one_copy(move))
+                power = engine.endPower
+            self.moveLog.append(move.copy())
             global testPointReal
             testChessPiece = move.chess_pieceSelected[1:]
             makeRedMove = self.redTurn
             testPointReal += (   # AI/RED
                                  # player/BLACK
-                              (0 - rule.upperHalfPosition[testChessPiece][move.startRow][move.startCol]
-                                 + rule.upperHalfPosition[testChessPiece][move.endRow][move.endCol]
+                              (0 - engine.upperHalfPosition[testChessPiece][move.startRow][move.startCol]
+                                 + engine.upperHalfPosition[testChessPiece][move.endRow][move.endCol]
                                  + (power[move.chess_pieceMoveTo[1:]] 
-                                    + rule.bottomHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
+                                    + engine.bottomHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
                                     if move.chess_pieceMoveTo[1:] != "--" else 0))
                                  if makeRedMove else
-                              (0 + rule.bottomHalfPosition[testChessPiece][move.startRow][move.startCol]
-                                 - rule.bottomHalfPosition[testChessPiece][move.endRow][move.endCol]
+                              (0 + engine.bottomHalfPosition[testChessPiece][move.startRow][move.startCol]
+                                 - engine.bottomHalfPosition[testChessPiece][move.endRow][move.endCol]
                                  - (power[move.chess_pieceMoveTo[1:]] 
-                                    + rule.upperHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
+                                    + engine.upperHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
                                     if move.chess_pieceMoveTo[1:] != "--" else 0))
                                  ) if self.redIsMachine else (
                                  # AI/BLACK
                                  # player/RED
-                              (0 + rule.bottomHalfPosition[testChessPiece][move.startRow][move.startCol] 
-                                 - rule.bottomHalfPosition[testChessPiece][move.endRow][move.endCol]
+                              (0 + engine.bottomHalfPosition[testChessPiece][move.startRow][move.startCol] 
+                                 - engine.bottomHalfPosition[testChessPiece][move.endRow][move.endCol]
                                  - (power[move.chess_pieceMoveTo[1:]] 
-                                    + rule.upperHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
+                                    + engine.upperHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
                                     if move.chess_pieceMoveTo[1:] != "--" else 0)) # player turn
                                  if makeRedMove else
-                              (0 - rule.upperHalfPosition[testChessPiece][move.startRow][move.startCol]
-                                 + rule.upperHalfPosition[testChessPiece][move.endRow][move.endCol]
+                              (0 - engine.upperHalfPosition[testChessPiece][move.startRow][move.startCol]
+                                 + engine.upperHalfPosition[testChessPiece][move.endRow][move.endCol]
                                  + (power[move.chess_pieceMoveTo[1:]] 
-                                    + rule.bottomHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
+                                    + engine.bottomHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
                                     if move.chess_pieceMoveTo[1:] != "--" else 0)) # AI turn
                                  )
             self.redTurn = not self.redTurn
@@ -277,7 +296,7 @@ class State:
         global testPointReal
         if len(self.moveLog) == 0:
             return
-        lastMove = all_in_one_copy(self.moveLog[-1])
+        lastMove = Move(self.moveLog[-1]).copy()
         self.board[lastMove.startRow][lastMove.startCol] = lastMove.chess_pieceSelected
         self.board[lastMove.endRow][lastMove.endCol] = lastMove.chess_pieceMoveTo
         undoRedTurn = not self.redTurn
@@ -296,40 +315,40 @@ class State:
         self.pastMoveStorage.append(deepcopy(self.moveLog.pop()))
         print("Undo number of moves: ", len(self.moveLog))
         if len(self.moveLog) >= 0 and len(self.moveLog) <= 14:
-                power = rule.startPower
+                power = engine.startPower
         elif len(self.moveLog) >= 14 and len(self.moveLog) <= 50:
-                power = rule.midPower
+                power = engine.midPower
         else:
-                power = rule.endPower
+                power = engine.endPower
         
         testChessPiece = lastMove.chess_pieceSelected[1:]
         undoRedTurn = not self.redTurn
         testPointReal -= (       # AI/RED
                                  # player/BLACK
-                              (0 - rule.upperHalfPosition[testChessPiece][lastMove.startRow][lastMove.startCol]
-                                 + rule.upperHalfPosition[testChessPiece][lastMove.endRow][lastMove.endCol]
+                              (0 - engine.upperHalfPosition[testChessPiece][lastMove.startRow][lastMove.startCol]
+                                 + engine.upperHalfPosition[testChessPiece][lastMove.endRow][lastMove.endCol]
                                  + (power[lastMove.chess_pieceMoveTo[1:]] 
-                                    + rule.bottomHalfPosition[lastMove.chess_pieceMoveTo[1:]][lastMove.endRow][lastMove.endCol] 
+                                    + engine.bottomHalfPosition[lastMove.chess_pieceMoveTo[1:]][lastMove.endRow][lastMove.endCol] 
                                     if lastMove.chess_pieceMoveTo[1:] != "--" else 0))
                                  if undoRedTurn else
-                              (0 + rule.bottomHalfPosition[testChessPiece][lastMove.startRow][lastMove.startCol]
-                                 - rule.bottomHalfPosition[testChessPiece][lastMove.endRow][lastMove.endCol]
+                              (0 + engine.bottomHalfPosition[testChessPiece][lastMove.startRow][lastMove.startCol]
+                                 - engine.bottomHalfPosition[testChessPiece][lastMove.endRow][lastMove.endCol]
                                  - (power[lastMove.chess_pieceMoveTo[1:]] 
-                                    + rule.upperHalfPosition[lastMove.chess_pieceMoveTo[1:]][lastMove.endRow][lastMove.endCol] 
+                                    + engine.upperHalfPosition[lastMove.chess_pieceMoveTo[1:]][lastMove.endRow][lastMove.endCol] 
                                     if lastMove.chess_pieceMoveTo[1:] != "--" else 0))
                                  ) if self.redIsMachine else (
                                  # AI/BLACK
                                  # player/RED
-                              (0 + rule.bottomHalfPosition[testChessPiece][lastMove.startRow][lastMove.startCol] 
-                                 - rule.bottomHalfPosition[testChessPiece][lastMove.endRow][lastMove.endCol]
+                              (0 + engine.bottomHalfPosition[testChessPiece][lastMove.startRow][lastMove.startCol] 
+                                 - engine.bottomHalfPosition[testChessPiece][lastMove.endRow][lastMove.endCol]
                                  - (power[lastMove.chess_pieceMoveTo[1:]] 
-                                    + rule.upperHalfPosition[lastMove.chess_pieceMoveTo[1:]][lastMove.endRow][lastMove.endCol] 
+                                    + engine.upperHalfPosition[lastMove.chess_pieceMoveTo[1:]][lastMove.endRow][lastMove.endCol] 
                                     if lastMove.chess_pieceMoveTo[1:] != "--" else 0))
                                  if undoRedTurn else
-                              (0 - rule.upperHalfPosition[testChessPiece][lastMove.startRow][lastMove.startCol]
-                                 + rule.upperHalfPosition[testChessPiece][lastMove.endRow][lastMove.endCol]
+                              (0 - engine.upperHalfPosition[testChessPiece][lastMove.startRow][lastMove.startCol]
+                                 + engine.upperHalfPosition[testChessPiece][lastMove.endRow][lastMove.endCol]
                                  + (power[lastMove.chess_pieceMoveTo[1:]] 
-                                    + rule.bottomHalfPosition[lastMove.chess_pieceMoveTo[1:]][lastMove.endRow][lastMove.endCol] 
+                                    + engine.bottomHalfPosition[lastMove.chess_pieceMoveTo[1:]][lastMove.endRow][lastMove.endCol] 
                                     if lastMove.chess_pieceMoveTo[1:] != "--" else 0))
                                  )
         self.redTurn = not self.redTurn
@@ -340,7 +359,7 @@ class State:
         global testPointReal
         if len(self.pastMoveStorage) == 0:
             return
-        nextMoveInStorage = all_in_one_copy(self.pastMoveStorage[-1])
+        nextMoveInStorage = Move(self.pastMoveStorage[-1]).copy()
         self.board[nextMoveInStorage.startRow][nextMoveInStorage.startCol] = "---"
         self.board[nextMoveInStorage.endRow][nextMoveInStorage.endCol] = nextMoveInStorage.chess_pieceSelected
         redoRedTurn = self.redTurn
@@ -357,40 +376,40 @@ class State:
                 
         print("Redo number of moves: ", len(self.moveLog))
         if len(self.moveLog) >= 0 and len(self.moveLog) <= 14:
-                power = rule.startPower
+                power = engine.startPower
         elif len(self.moveLog) >= 14 and len(self.moveLog) <= 50:
-                power = rule.midPower
+                power = engine.midPower
         else:
-                power = rule.endPower
-        self.moveLog.append(all_in_one_copy(self.pastMoveStorage.pop()))
+                power = engine.endPower
+        self.moveLog.append(Move(self.pastMoveStorage.pop()).copy())
         
         testChessPiece = nextMoveInStorage.chess_pieceSelected[1:]
         testPointReal += (       # AI/RED
                                  # player/BLACK
-                              (0 - rule.upperHalfPosition[testChessPiece][nextMoveInStorage.startRow][nextMoveInStorage.startCol]
-                                 + rule.upperHalfPosition[testChessPiece][nextMoveInStorage.endRow][nextMoveInStorage.endCol]
+                              (0 - engine.upperHalfPosition[testChessPiece][nextMoveInStorage.startRow][nextMoveInStorage.startCol]
+                                 + engine.upperHalfPosition[testChessPiece][nextMoveInStorage.endRow][nextMoveInStorage.endCol]
                                  + (power[nextMoveInStorage.chess_pieceMoveTo[1:]] 
-                                    + rule.bottomHalfPosition[nextMoveInStorage.chess_pieceMoveTo[1:]][nextMoveInStorage.endRow][nextMoveInStorage.endCol] 
+                                    + engine.bottomHalfPosition[nextMoveInStorage.chess_pieceMoveTo[1:]][nextMoveInStorage.endRow][nextMoveInStorage.endCol] 
                                     if nextMoveInStorage.chess_pieceMoveTo[1:] != "--" else 0))
                                  if redoRedTurn else
-                              (0 + rule.bottomHalfPosition[testChessPiece][nextMoveInStorage.startRow][nextMoveInStorage.startCol]
-                                 - rule.bottomHalfPosition[testChessPiece][nextMoveInStorage.endRow][nextMoveInStorage.endCol]
+                              (0 + engine.bottomHalfPosition[testChessPiece][nextMoveInStorage.startRow][nextMoveInStorage.startCol]
+                                 - engine.bottomHalfPosition[testChessPiece][nextMoveInStorage.endRow][nextMoveInStorage.endCol]
                                  - (power[nextMoveInStorage.chess_pieceMoveTo[1:]] 
-                                    + rule.upperHalfPosition[nextMoveInStorage.chess_pieceMoveTo[1:]][nextMoveInStorage.endRow][nextMoveInStorage.endCol] 
+                                    + engine.upperHalfPosition[nextMoveInStorage.chess_pieceMoveTo[1:]][nextMoveInStorage.endRow][nextMoveInStorage.endCol] 
                                     if nextMoveInStorage.chess_pieceMoveTo[1:] != "--" else 0))
                                  ) if self.redIsMachine else (
                                  # AI/BLACK
                                  # player/RED
-                              (0 + rule.bottomHalfPosition[testChessPiece][nextMoveInStorage.startRow][nextMoveInStorage.startCol] 
-                                 - rule.bottomHalfPosition[testChessPiece][nextMoveInStorage.endRow][nextMoveInStorage.endCol]
+                              (0 + engine.bottomHalfPosition[testChessPiece][nextMoveInStorage.startRow][nextMoveInStorage.startCol] 
+                                 - engine.bottomHalfPosition[testChessPiece][nextMoveInStorage.endRow][nextMoveInStorage.endCol]
                                  - (power[nextMoveInStorage.chess_pieceMoveTo[1:]] 
-                                    + rule.upperHalfPosition[nextMoveInStorage.chess_pieceMoveTo[1:]][nextMoveInStorage.endRow][nextMoveInStorage.endCol] 
+                                    + engine.upperHalfPosition[nextMoveInStorage.chess_pieceMoveTo[1:]][nextMoveInStorage.endRow][nextMoveInStorage.endCol] 
                                     if nextMoveInStorage.chess_pieceMoveTo[1:] != "--" else 0))
                                  if redoRedTurn else
-                              (0 - rule.upperHalfPosition[testChessPiece][nextMoveInStorage.startRow][nextMoveInStorage.startCol]
-                                 + rule.upperHalfPosition[testChessPiece][nextMoveInStorage.endRow][nextMoveInStorage.endCol]
+                              (0 - engine.upperHalfPosition[testChessPiece][nextMoveInStorage.startRow][nextMoveInStorage.startCol]
+                                 + engine.upperHalfPosition[testChessPiece][nextMoveInStorage.endRow][nextMoveInStorage.endCol]
                                  + (power[nextMoveInStorage.chess_pieceMoveTo[1:]] 
-                                    + rule.bottomHalfPosition[nextMoveInStorage.chess_pieceMoveTo[1:]][nextMoveInStorage.endRow][nextMoveInStorage.endCol] 
+                                    + engine.bottomHalfPosition[nextMoveInStorage.chess_pieceMoveTo[1:]][nextMoveInStorage.endRow][nextMoveInStorage.endCol] 
                                     if nextMoveInStorage.chess_pieceMoveTo[1:] != "--" else 0))
                                  )
         self.redTurn = not self.redTurn
@@ -398,11 +417,11 @@ class State:
 
     # Get all valid moves for a given position
     def checkValid(self, position):
-        return rule.moveRule(self.board, position, self.redIsMachine)
+        return engine.moveRule(self.board, position, self.redIsMachine)
 
     # Check if the current player is in check
     def check(self):
-        return rule.isChecked(
+        return engine.isChecked(
             self.board,
             self.blackGeneral,
             self.redGeneral,
@@ -414,111 +433,68 @@ class State:
 
     # Check if the current player is in checkmate
     def checkMate(self):
-        if State.getAllValid(self.board, self.red_chess_piece_pos_dict, self.black_chess_piece_pos_dict, self.redTurn, self.redIsMachine) == []:
+        valid_moves = engine.getAllValid(self.board, self.red_chess_piece_pos_dict, self.black_chess_piece_pos_dict, self.redTurn, self.redIsMachine)
+        if not valid_moves:  # more Pythonic to check emptiness
             return True, "b" if self.redTurn else "r"
         return False, ""
-
-    # Get all valid moves for the current player
-    @staticmethod
-    def getAllValid(board, red_chess_piece_pos_dict, black_chess_piece_pos_dict, redTurn, redIsMachine):
-        candidateMoveList = []
-        validMoveList = []
-        chess_piece_pos_dict = red_chess_piece_pos_dict if redTurn else black_chess_piece_pos_dict
-        all_positions = get_all_chess_piece_positions(chess_piece_pos_dict)
-        for (row, col) in all_positions:
-            candidateMoveList = rule.moveRule(board, (row, col), redIsMachine)
-            for cell in candidateMoveList:
-                move = Move(board, (row, col), cell)
-                tmpBoard = all_in_one_copy(board)
-                tmpRedTurn = redTurn
-                tmpRed_chess_piece_pos_dict = all_in_one_copy(red_chess_piece_pos_dict)
-                tmpBlack_chess_piece_pos_dict = all_in_one_copy(black_chess_piece_pos_dict)
-                universal_chess_piece_dict_update(tmpRed_chess_piece_pos_dict,
-                                                  tmpBlack_chess_piece_pos_dict,
-                                                  move.chess_pieceSelected,
-                                                  move.chess_pieceMoveTo,
-                                                  move.startRow,
-                                                  move.startCol,
-                                                  move.endRow,
-                                                  move.endCol
-                                                  )
-                tmpBoard[move.startRow][move.startCol] = "---"
-                tmpBoard[move.endRow][move.endCol] = move.chess_pieceSelected
-                if rule.moveCheckValid(tmpBoard, tmpRed_chess_piece_pos_dict, tmpBlack_chess_piece_pos_dict, tmpRedTurn, redIsMachine):
-                    validMoveList.append([(row, col), cell])
-        return validMoveList
-
     
+
     # Evaluate the board for the current state
     @staticmethod
     def evaluate(redIsMachine, moveCounter, preGuessMove):
-        # start_time = time.perf_counter_ns()
         global testPointReal
-        # ePoint = 0
         tmpRedTurn = redIsMachine
         testPoint = testPointReal 
         if(preGuessMove != None):      
             for move in preGuessMove:
-                # print(f"Move number {moveCounter}")
                 if moveCounter >= 0 and moveCounter <= 14:
-                    power = rule.startPower
+                    power = engine.startPower
                 elif moveCounter >= 14 and moveCounter <= 50:
-                    power = rule.midPower
+                    power = engine.midPower
                 else:
-                    power = rule.endPower
+                    power = engine.endPower
                 
                 testChessPiece = move.chess_pieceSelected[1:]
-                # print(f"{move.chess_pieceSelected} - ", end = '') 
-                # if testChessPiece == 'ch':
-                #     if(tmpBoard[move.endRow][move.endCol])
-                
-                testPoint += ((0 - rule.upperHalfPosition[testChessPiece][move.startRow][move.startCol]
-                                 + rule.upperHalfPosition[testChessPiece][move.endRow][move.endCol]
+                testPoint += ((0 - engine.upperHalfPosition[testChessPiece][move.startRow][move.startCol]
+                                 + engine.upperHalfPosition[testChessPiece][move.endRow][move.endCol]
                                  + (( power[move.chess_pieceMoveTo[1:]])
-                                    + rule.bottomHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
+                                    + engine.bottomHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
                                     if move.chess_pieceMoveTo[1:] != "--" else 0))
                                  if tmpRedTurn else
-                              (0 + rule.bottomHalfPosition[testChessPiece][move.startRow][move.startCol]
-                                 - rule.bottomHalfPosition[testChessPiece][move.endRow][move.endCol]
+                              (0 + engine.bottomHalfPosition[testChessPiece][move.startRow][move.startCol]
+                                 - engine.bottomHalfPosition[testChessPiece][move.endRow][move.endCol]
                                  - (  power[move.chess_pieceMoveTo[1:]] 
-                                    + rule.upperHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
+                                    + engine.upperHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
                                     if move.chess_pieceMoveTo[1:] != "--" else 0))
                                  ) if redIsMachine else (
                                  # AI/BLACK
                                  # player/RED
-                              (0 + rule.bottomHalfPosition[testChessPiece][move.startRow][move.startCol]
-                                 - rule.bottomHalfPosition[testChessPiece][move.endRow][move.endCol]
+                              (0 + engine.bottomHalfPosition[testChessPiece][move.startRow][move.startCol]
+                                 - engine.bottomHalfPosition[testChessPiece][move.endRow][move.endCol]
                                  - (power[move.chess_pieceMoveTo[1:]] 
-                                    + rule.upperHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
+                                    + engine.upperHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
                                     if move.chess_pieceMoveTo[1:] != "--" else 0))
                                  if tmpRedTurn else
-                              (0 - rule.upperHalfPosition[testChessPiece][move.startRow][move.startCol]
-                                 + rule.upperHalfPosition[testChessPiece][move.endRow][move.endCol]
+                              (0 - engine.upperHalfPosition[testChessPiece][move.startRow][move.startCol]
+                                 + engine.upperHalfPosition[testChessPiece][move.endRow][move.endCol]
                                  + (power[move.chess_pieceMoveTo[1:]] 
-                                    + rule.bottomHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
+                                    + engine.bottomHalfPosition[move.chess_pieceMoveTo[1:]][move.endRow][move.endCol] 
                                     if move.chess_pieceMoveTo[1:] != "--" else 0))
                                  )
                 moveCounter += 1
                 tmpRedTurn = not tmpRedTurn
-            # if testPoint != ePoint :
-            #     print(f"{testPoint} - {ePoint}")
-        
-        # end_time = time.perf_counter_ns()  # ⏱️ End the timer
-        # duration = (end_time - start_time)/(1e9)
-        # print(f"Evaluate took {duration:.9f} seconds, E = {testPoint}")
         return testPoint
 
 
-# Get the next game state after a move
-def getNextGameState(board, nextMove):
-    tmpBoard = all_in_one_copy(board)
-    if isinstance(nextMove, Move):
-        copyNextMove = nextMove.copy()
-        tmpNextMove = [(copyNextMove.startRow, copyNextMove.startCol), (copyNextMove.endRow, copyNextMove.endCol)]
-    else:
-        tmpNextMove = nextMove
-    selectedChess_piece = tmpBoard[tmpNextMove[0][0]][tmpNextMove[0][1]]
-    tmpBoard[tmpNextMove[0][0]][tmpNextMove[0][1]] = "---"
-    tmpBoard[tmpNextMove[1][0]][tmpNextMove[1][1]] = selectedChess_piece
-    # print("tmpBoard: ", State.evaluate(tmpBoard, redTurn, redIsMachine,  moveCounter , None))
-    return tmpBoard
+# # Get the next game state after a move
+# def getNextGameState(board, nextMove):
+#     tmpBoard = np.copy(board)
+#     # if isinstance(nextMove, Move):
+#     #     copyNextMove = nextMove.copy()
+#     #     tmpNextMove = [(copyNextMove.startRow, copyNextMove.startCol), (copyNextMove.endRow, copyNextMove.endCol)]
+#     # else:
+#     tmpNextMove = nextMove
+#     selectedChess_piece = tmpBoard[tmpNextMove[0][0]][tmpNextMove[0][1]]
+#     tmpBoard[tmpNextMove[0][0]][tmpNextMove[0][1]] = "---"
+#     tmpBoard[tmpNextMove[1][0]][tmpNextMove[1][1]] = selectedChess_piece
+#     return tmpBoard

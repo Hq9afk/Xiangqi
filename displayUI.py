@@ -39,7 +39,6 @@ def displayGameState(screen, gameState: chessEngine.State, st):
     global check
     if gameState.checkMate()[0]:
         displayResult(screen, gameState)
-
     elif gameState.check() and check:
         startTime = p.time.get_ticks()
         displayCheck(screen, gameState)
@@ -129,12 +128,13 @@ def displayResult(screen, gameState: chessEngine.State):
         winner = "RED" if gameState.checkMate()[1] == "r" else "BLACK"
         p.font.init()
         gameTime = gameEndTime - gameStartTime
-        print(f"CHECKMATE, {winner} WINS in {gameTime:.0f}s")
+        # print(f"CHECKMATE, {winner} WINS in {gameTime:.0f}s")
         myFont = p.font.SysFont("Comic Sans MS", 30)
         textSurface = myFont.render(f"CHECKMATE, {winner} WINS in {gameTime:.0f}s", False, (0, 0, 0))
         screen.blit(
             textSurface, (s.WIDTH / 2 - textSurface.get_width() / 2, s.START_Y + 5)
         )
+        
 
 
 # Display a banner when the AI is processing
