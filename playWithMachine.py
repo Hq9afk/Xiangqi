@@ -269,7 +269,7 @@ def gameModemanager(state, type):
         if type == 1:
             play = playWithRandom(state)
         elif type == 2:
-            play = playWithAI(state, 5)
+            play = playWithAI(state, 4)
         if play:
             state.makeMove(play)
     if type == 3:
