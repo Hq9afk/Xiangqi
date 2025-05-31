@@ -7,6 +7,8 @@ import playWithMachine as pWM
 import displayUI as dp
 import xiangqi_cpp as engine
 
+import time
+gameStartTime = 0
 
 gameStart = False  # Start game
 returnToMain = False  # Return to main menu
