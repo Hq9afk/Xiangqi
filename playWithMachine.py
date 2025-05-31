@@ -231,7 +231,6 @@ def playWithAI(state, depth):
     return None
 
 
-
 # Function to let the Minimax algorithm play against the random move generator
 def AIVSRandom(state, depth):
     play = None

@@ -127,6 +127,8 @@ def gameScreenManager():
                 break
 
             if gameMode != -1:
+                global gameStartTime
+                gameStartTime = time.time()
                 dp.displayGameState(screen, gameState, gameStart)
 
                 for btn in gameButtonList:
